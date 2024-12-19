@@ -20,6 +20,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.0.2",
     "react-select": "^5.9.0",
+    "react-tiny-popover": "^8.1.4",
     "simple-datatables": "^9.2.1",
     "world-countries": "^5.0.0"
   },
