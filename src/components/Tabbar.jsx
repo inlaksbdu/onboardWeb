@@ -2,7 +2,7 @@ import PropTypes from "prop-types"
 
 function Tabbar({ currentTab, setTab }) {
   return (
-    <div className="w-full bg-white py-6 flex flex-row items-center justify-center absolute top-0">
+    <div className="w-full z-50 bg-white py-6 flex flex-row items-center justify-center absolute top-0">
       <div className="w-[30%] flex justify-between">
         {/* Each tab is represented as a small bar */}
         <span

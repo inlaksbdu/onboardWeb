@@ -1,43 +1,140 @@
-import document from "../../assets/img/svg/document.svg"
-import PropTypes from "prop-types"
+import PropTypes from "prop-types";
+import { useEffect } from "react";
+import Select from "react-select";
+import { Link } from "react-router-dom";
+import logo from "../../assets/img/svg/logo.svg";
+import documentsvg from "../../assets/img/svg/document.svg";
 
+function DocumentScanning({ setTab }) {
+  useEffect(() => {
+    const elements = document.getElementsByClassName("css-1u9des2-indicatorSeparator");
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].style.display = "none";
+    }
+  }, []);
 
-function DocumentScanning({setTab}) {
+  const countryOptions = [
+    {
+      value: "English",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          English
+          <img
+            src="https://flagcdn.com/w40/us.png"
+            alt="English"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+            className="rounded-full"
+          />
+        </div>
+      ),
+    },
+    {
+      value: "French",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          French
+          <img
+            src="https://flagcdn.com/w40/fr.png"
+            alt="Ghana"
+            className="rounded-full"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: "white",
+      color: "#374151",
+      border: state.isFocused ? "1px solid #9ca3af" : "1px solid #e5e7eb",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      borderRadius: "0.5rem",
+      height: "33px",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        borderColor: "#d1d5db",
+      },
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: "0.5rem",
+      zIndex: 5,
+      height: "250px",
+      overflowY: "scroll",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "#e5e7eb" : "transparent",
+      color: "#374151",
+      padding: "5px 5px",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#9ca3af",
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#374151",
+    }),
+  };
+
   return (
-
-    <div className="max-lg:w-[80%]  w-[60%]      justify   max-sm:w-[90%]  h-fit justify-center items-center flex flex-col ">
-    
-        <div className="w-full text-center mb-24">
-            <h4 className="text-2xl text-slate-800 font-semibold">Document Scanning</h4>
-        </div>
-    
-        <div className="w-full flex justify-center items-center mb-10 ">
-            
-            <div className="p-4 rounded-full bg-[#F5E4FF]">
-            <img src={document} />
+    <div className="w-full h-full justify-center items-center overflow-y-scroll">
+      <div className="w-full flex justify-center items-center mt-11 pb-10 pt-3 max-sm:px-4 max-xs:px-3">
+        <div className="md:w-[50%] sm:w-[65%] xs:w-[80%] w-[96%] border pb-8 pt-3 max-md:px-3 md:px-5 rounded-lg shadow bg-[#FBFBFB59]">
+          <div className="w-full flex justify-end px-4 mb-4">
+            <div>
+              <Select
+                options={countryOptions}
+                placeholder="Choose a country"
+                styles={customStyles}
+                defaultValue={countryOptions[0]}
+              />
             </div>
+          </div>
+          <div className="w-full flex justify-center items-center flex-col mb-4">
+            <img src={logo} className="mb-2" alt="logo" />
+            <h4 className="font-poppins font-semibold text-xl mb-1">Document scanning</h4>
+          </div>
+          <div className="w-full my-8 flex justify-center items-center">
+            <div className="p-4 rounded-full bg-[#F5E4FF] w-fit">
+              <img src={documentsvg} alt="Document Icon" />
+            </div>
+          </div>
+          <div className="w-full flex flex-col justify-center items-center">
+            <div className="w-full flex flex-col justify-center items-center mt-0">
+              <div className="w-full flex justify-center items-center flex-col">
+                <div className="w-[90%] flex flex-col text-center justify-center items-center">
+                  <div className="text-slate-900 font-semibold w-full">
+                    Scan your document with Onboard
+                  </div>
+                  <div className="text-slate-600 w-full">
+                    Upload or capture an image of your ID document. Make sure all details are
+                    clearly visible.
+                  </div>
+                </div>
+                <Link
+                  to="/onboarding"
+                  type="button"
+                  onClick={()=>{setTab("tab4")}}
+                  className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
+                >
+                  Get started
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="w-full text-center">
-        <h4 className="text-2xl text-slate-800 font-semibold"> Scan your document with Onboard</h4>
-    
-        <p className="text-base  text-gray-500 mt-2  "> Upload or capture an image of your ID document. Make sure all details are clearly visible.</p>
-    
-        </div>
-        
-        <button   onClick={() => setTab('tab4')} type="button" className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  w-[60%] text-center mt-5  justify-center  duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all ">
-        Get Started
-    
-    
-    </button>
-    
+      </div>
     </div>
-  )
+  );
 }
 
-
 DocumentScanning.propTypes = {
-  setTab: PropTypes.func
+  setTab: PropTypes.func.isRequired, // Updated to ensure it's mandatory
 };
 
-
-export default DocumentScanning
+export default DocumentScanning;

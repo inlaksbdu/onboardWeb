@@ -1,59 +1,175 @@
-import logo from '../../assets/img/svg/logo.svg'
-import PropTypes from "prop-types"
+import logo from "../../assets/img/svg/logo.svg";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import Select from "react-select";
+import googlesvg from "../../assets/img/svg/google.svg"
+import PropTypes from "prop-types";
 
-function SigninComponent({ setTab }) {
+function SigninComponent({setTab}) {
+
+ 
+  useEffect(() => {
+    const elements = document.getElementsByClassName('css-1u9des2-indicatorSeparator');
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].style.display = "none";
+    }
+    
+  }, []); //
+
+  const countryOptions = [
+    {
+      value: "English",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex" >
+       
+          English
+          <img
+            src="https://flagcdn.com/w40/us.png"
+            alt="English"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+            className="rounded-full"
+          />
+        </div>
+      ),
+    },
+    {
+      value: "French",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex" >
+        
+          French
+          <img
+            src="https://flagcdn.com/w40/fr.png"
+            alt="Ghana"
+            className="rounded-full"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+          />
+        </div>
+      ),
+    },
+    // Add more countries here
+  ];
+  
+
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: "white", // bg-gray-50
+      color: "#374151", // text-slate-700
+      border: state.isFocused ? "1px solid #9ca3af" : "1px solid #e5e7eb", // focus:border-slate-400 / border-slate-200
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      borderRadius: "0.5rem", // rounded-lg
+      height: "33px", //
+      transition: "all 0.3s ease",
+    
+      "&:hover": {
+        borderColor: "#d1d5db",
+         // hover:border-slate-300
+      },
+
+      
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: "0.5rem",
+      zIndex: 5,
+      height: "250px",
+      overflowY:"scroll",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "#e5e7eb" : "transparent", // hover color
+      color: "#374151", // text color
+      padding: "5px 5px",
+    
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#9ca3af", // placeholder text-slate-400
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#374151", // text-slate-700
+    }),
+  };
+
+
   return (
-    <div className="max-lg:w-[80%] max-sm:w-[90%]  overflow-hidden w-[60%] border  max-lg:mt-24  border-[#8600D9EB] rounded-lg max-sm:mx-4  grid grid-cols-2 max-md:grid-rows-[1fr,2fr]  max-md:grid-cols-1 ">
-      <div id="fit" className="w-full bg-[#FBF4FF80]  border-r border-r-[#efd7fdeb] flex justify-center items-center flex-col ">
-        <img src={logo} className="mb-3" alt="logo" />
-        <h4 className="font-poppins font-semibold text-3xl mb-2">
-          <span className="bg-text-gradient bg-clip-text text-transparent ml-1">
-            onboard
-          </span>
-        </h4>
-        <h6 className="text-gray-800 font-semibold text-xl">
-          Sign in to Onboard
-        </h6>
-        <p className="text-base text-gray-500 mt-2">Carefully provide information here</p>
-      </div>
-      <div className="w-full p-4 flex justify-center items-center text-start flex-col">
-        <form className="w-full">
-          <div className="w-full py-4 px-2">
-            <div className='mb-2'>
-              <label htmlFor="email" className="block mb-2 text-base font-medium text-slate-700 ">Email</label>
-              <input type="email" id="email" className="bg-gray-50 text-slate-700 border border-slate-200 text-base rounded-lg transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5" placeholder="Enter email" required />
-            </div>
+    <div className="w-full h-full justify-center items-center overflow-scroll">
+      <div className="w-full flex justify-center items-center mt-11 pb-10 pt-3 max-sm:px-4 max-xs:px-3">
+        <div className="md:w-[50%] sm:w-[65%] xs:w-[80%] w-[96%] border pb-8 pt-3 max-md:px-3 md:px-5 rounded-lg shadow bg-[#FBFBFB59]">
+        <div className="w-full flex justify-end  px-4 mb-4"> <div>
+        <Select
+        options={countryOptions}
+        placeholder="Choose a country"
+        styles={customStyles}
+        defaultValue={countryOptions[0]}
+      
 
-            <div className='mb-2'>
-              <label htmlFor="password" className="block mb-2 text-base font-medium text-slate-700 ">Password</label>
-              <input type="password" id="password" className="bg-gray-50 text-slate-700 border border-slate-200 text-base rounded-lg transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5" placeholder="Enter password" required />
-            </div>
-
-            <div className='mb-2'>
-              <label htmlFor="confirm_password" className="block mb-2 text-base text-slate-700 font-medium ">Confirm Password</label>
-              <input type="confirm_password" id="confirm_password" className="bg-gray-50 text-slate-700 border border-slate-200 text-base rounded-lg transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5" placeholder="Enter confirmation password" required />
-            </div>
-
-            <div className='mb-2'>
-              <label htmlFor="language" className="block mb-2 text-base text-slate-700 font-medium ">Language</label>
-              <select className="bg-gray-50 text-slate-700 border border-slate-200 text-base rounded-lg transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5">
-                <option>English</option>
-              </select>
-            </div>
-
-            <button onClick={() => setTab('tab2')} type="button" className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 w-full text-center mt-5 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all">
-              Create account
-            </button>
+      />
+        </div> </div>
+          <div className="w-full flex justify-center items-center flex-col mb-4">
+            <img src={logo} className="mb-2" alt="logo" />
+            <h4 className="font-poppins font-semibold text-xl mb-1">
+              Sign in to Onboard
+            </h4>
+           
           </div>
-        </form>
+          <div className="w-full px-4 flex text-start flex-col justify-center items-center">
+            
+            <div className="w-full flex flex-col justify-center items-center mt-0">
+             
+          <div className=" md:w-[90%] w-full flex justify-center items-center flex-col">
+          <div className="shadow-md w-full px-2 py-2 mb-5 border border-slate-100 rounded-lg bg-white flex justify-center items-center text-md font-normal text-slate-900 ">
+          <img src={googlesvg} className="h-7 w-7"/>
+          continue with google
+
+          </div>
+
+          <div className="w-full flex-row flex justify-between items-center mb-5 ">
+          <hr className="w-full bg-slate-200"/> <span className="mx-1 text-xs text-slate-600 text-nowrap mb-1"> or sign in with</span><hr className="w-full bg-slate-200"/>
+
+
+            
+            </div>
+
+            <div className="w-full ">
+            <div className='mb-2'>
+            <label htmlFor="password" className="block mb-2 text-base font-normal text-slate-500 ">Email</label>
+            <input type="email" id="last_nam" className="bg-gray-50    text-slate-700 border placeholder:text-slate-700 border-slate-200  text-base rounded-lg  transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5 " placeholder="Enter Email" required />
+        </div>
+
+        <div className='mb-2'>
+            <label htmlFor="password" className="block mb-2 text-base font-normal text-slate-500 ">Password</label>
+            <input type="password" id="last_nam" className="bg-gray-50    text-slate-700 border placeholder:text-slate-700 border-slate-200  text-base rounded-lg  transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5 " placeholder="Enter Password" required />
+        </div>
+
+
+        <Link
+                to="/onboarding"
+                type="button"
+                onClick={()=>{setTab("tab2")}}
+                className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  font-semibold text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all w-full"
+              >
+                Create account
+             
+              </Link>
+            </div>
+
+          </div>
+          
+             
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    
-  )
+  );
 }
 
+
 SigninComponent.propTypes = {
-  setTab: PropTypes.func
+  setTab: PropTypes.func.isRequired, // Updated to ensure it's mandatory
 };
 
 export default SigninComponent;

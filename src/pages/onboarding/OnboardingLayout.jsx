@@ -53,7 +53,7 @@ function OnboardingLayout() {
       <AnimatePresence custom={direction} mode="wait">
         <motion.div
           key={currentTab}
-          className="w-full flex justify-center items-center  h-full "
+          className="w-full flex justify-center items-center  h-full  "
           custom={direction}
           initial="enter"
           animate="center"
