@@ -109,7 +109,7 @@ function Table() {
                       padding={10}
                       onClickOutside={() => setIsDetailsPopoverVisible(false)}
                       content={
-                        <div className="bg-white w-[350px] py-2 rounded-md shadow-md">
+                        <div style={{zIndex:2000,}} className="bg-white w-[350px]   z-40 py-2 rounded-md shadow-md">
                           <div onClick={toggleModal} className="flex items-center flex-col  hover:bg-[#EEEEEE] rounded-md  py-2 cursor-pointer">
 
                             
@@ -182,7 +182,7 @@ function Table() {
 
                             </div>
 
-                            <div className="flex flex-row justify-between w-full mb-10">
+                            <div className="flex flex-row justify-between w-full mb-3">
                             <span className="text-slate-600 text-start">Gender:</span>
                             <span className="text-end">Male</span>
 
@@ -190,12 +190,24 @@ function Table() {
 
                             <hr className="bg-[#3333332E] h-1 "/>
 
-                            <div className="w-full  my-4">
+                            <div className="w-full  my-4 ">
 
-<span className="font-semi-bold tex-sm  text-slate-800 mb-7">Onboarding  Information</span>
-<div className="flex flex-row justify-between w-full mb-3">
+<span className="font-semibold tex-sm  text-slate-800 ">Onboarding  Information</span>
+<div className="flex flex-row justify-between w-full mb-3 mt-4">
                             <span className="text-slate-600 text-start">Date of onboarding:</span>
                             <span className="text-end">12/17/2024</span>
+
+                            </div>
+
+                            <div className="flex flex-row justify-between w-full mb-3">
+                            <span className="text-slate-600 text-start">Profile type:</span>
+                            <span className="text-end">Individual</span>
+
+                            </div>
+
+                            <div className="flex flex-row justify-between w-full mb-3">
+                            <span className="text-slate-600 text-start">Onboarding status:</span>
+                            <span className="text-end">Completed</span>
 
                             </div>
 

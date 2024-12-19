@@ -5,7 +5,7 @@ import PropTypes from "prop-types"
 
 function Sidebar({sidebarReduced,toggleSidebar}) {
   return (
-    <div className={`  transition-all max-lg:duration-500 duration-300 ease-in-out  ${sidebarReduced? 'lg:w-[10%]  max-lg:-translate-x-0 ':'2lg:w-[22%]  lg:w-[25%]  max-lg:-translate-x-96 '}  max-lg:w-[32%] max-md:w-[45%] max-sm:w-[50%] max-xs:w-[65%] max-vsm:w-[85%] overflow-x-hidden max-lg:absolute lg:fixed  h-full z-50 bg-white border-r border-slate-200  py-4 px-3 flex flex-col`}>
+    <div className={`  transition-all max-lg:duration-500 duration-300 ease-in-out  ${sidebarReduced? 'lg:w-[10%]  max-lg:-translate-x-0 ':'2lg:w-[22%]  lg:w-[25%]  max-lg:-translate-x-96 '}  max-lg:w-[32%] max-md:w-[45%] max-sm:w-[50%] max-xs:w-[65%] max-vsm:w-[85%] overflow-x-hidden max-lg:absolute lg:fixed  h-full z-10 bg-white border-r border-slate-200  py-4 px-3 flex flex-col`}>
 
 <div className="absolute right-4 top-4 lg:hidden">
         <FontAwesomeIcon icon={faTimes} className='text-slate-600'  size="xl"  onClick={toggleSidebar} />
