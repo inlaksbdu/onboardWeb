@@ -1,12 +1,22 @@
 import logo from "../../assets/img/svg/logo.svg";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Welcome() {
   const [selectedOption, setSelectedOption] = useState(null);
+  const navigate=useNavigate()
 
   const handleRadioChange = (index) => {
     setSelectedOption(index);
+  };
+
+
+  const handleNextClick = () => {
+    if (selectedOption !== null) {
+      const selectedValue = ["Individual", "Groups", "SME"][selectedOption];
+      localStorage.setItem("selectedOption", selectedValue); // Save to local storage
+      navigate(`/onboarding`); 
+    }
   };
 
   return (
@@ -37,7 +47,7 @@ function Welcome() {
                   className={`w-[90%] group transition-all duration-300 ease-in-out ${
                     selectedOption === index
                       ? "bg-text-gradient text-white border"
-                      : "bg-white border text-gray-700 border-[#8600D9EB]"
+                      : "bg-white border text-slate-600 border-[#8600D9EB]"
                   } rounded-lg p-2 flex text-start flex-row mb-8 items-center`}
                 >
                   <p className="font-semibold">{label}</p>
@@ -55,8 +65,8 @@ function Welcome() {
                 </div>
               ))}
 
-              <Link
-                to="/onboarding"
+              <button
+               onClick={handleNextClick}
                 type="button"
                 className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 w-[50%] text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
               >
@@ -74,7 +84,7 @@ function Welcome() {
                     fill="white"
                   />
                 </svg>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

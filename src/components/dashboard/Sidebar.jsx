@@ -2,6 +2,7 @@ import Logo from "../../assets/img/svg/logo.svg"
 import { faTimes} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types"
+import { Link } from "react-router-dom";
 
 function Sidebar({sidebarReduced,toggleSidebar}) {
   return (
@@ -26,7 +27,7 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
 
 
 
-<a
+<Link to='/admin'
           className=" group flex  w-[90%] px-6    rounded-md  py-3  bg-white hover:bg-text-gradient  hover:to-[#470073EB]   transition duration-500 ease-in-out   0 transform   text-center  "
         >
           
@@ -51,11 +52,12 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
            
 
           </span>
-        </a>
+        </Link>
 
 
-        <a
+        <Link  to="/admin/customers"
           className=" group flex  w-[90%] px-6   rounded-md  py-3  bg-white hover:bg-text-gradient  hover:to-[#470073EB]   transition duration-500 ease-in-out   0 transform   text-center  "
+          
         >
           
 
@@ -84,11 +86,11 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
 
 
 
-        </a>
+        </Link>
 
 
  
-        <a
+        <Link to="/admin/system-analytics"
   className="group cursor-pointer flex w-[90%] px-6 rounded-md py-3 bg-white hover:bg-text-gradient hover:to-[#470073EB] transition duration-500 ease-in-out transform text-center"
 >
   <svg
@@ -122,7 +124,7 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
            <span className="group-hover:text-white "> System analytics</span>
 
           </span>
-</a>
+</Link>
 
 
 

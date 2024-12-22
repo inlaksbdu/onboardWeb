@@ -61,8 +61,8 @@ function OnboardingLayout() {
           variants={variants}
         >         
           {currentTab === "tab1" && <SigninComponent setTab={changeTab} />}
-          {currentTab === "tab2" && <FaceRecognition setTab={changeTab} />}
-          {currentTab === "tab3" && <DocumentScanning setTab={changeTab} />}
+          {currentTab === "tab2" && <DocumentScanning setTab={changeTab} />}
+          {currentTab === "tab3" &&  <FaceRecognition setTab={changeTab} />}
           {currentTab === "tab4" && <PersonalInformation setTab={changeTab} />}
 
         </motion.div>

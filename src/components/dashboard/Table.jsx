@@ -109,7 +109,7 @@ function Table() {
                       padding={10}
                       onClickOutside={() => setIsDetailsPopoverVisible(false)}
                       content={
-                        <div style={{zIndex:2000,}} className="bg-white w-[350px]   z-40 py-2 rounded-md shadow-md">
+                        <div style={{zIndex:2000,}} className="bg-white w-[350px]   z-40 py-2 rounded-md shadow-md h-screen overflow-y-scroll">
                           <div onClick={toggleModal} className="flex items-center flex-col  hover:bg-[#EEEEEE] rounded-md  py-2 cursor-pointer">
 
                             
@@ -212,6 +212,48 @@ function Table() {
                             </div>
 
 </div>
+
+
+
+<hr className="bg-[#3333332E] h-1 "/>
+
+<div className="w-full  my-4 ">
+
+<span className="font-semibold tex-sm  text-slate-800 ">  Document Information</span>
+<div className="flex flex-row justify-between w-full mb-3 mt-4">
+<span className="text-slate-600 text-start">Document type:</span>
+<span className="text-end">Drivers license</span>
+
+</div>
+
+<div className="flex flex-row justify-between w-full mb-3">
+<span className="text-slate-600 text-start">ID card issue date:</span>
+<span className="text-end">12/17/2024</span>
+
+</div>
+
+<div className="flex flex-row justify-between w-full mb-3">
+<span className="text-slate-600 text-start">Place of Birth:</span>
+<span className="text-end">Accra, Ghana</span>
+
+</div>
+
+
+
+
+
+
+
+
+<div className="flex flex-row justify-between w-full mb-3">
+<span className="text-slate-600 text-start">ID card expiry date:</span>
+<span className="text-end">12/17/2024</span>
+
+</div>
+
+
+
+</div>
                             </div>
 
 
@@ -241,6 +283,23 @@ function Table() {
                             <span className="mx-2 text-sm">View details</span>
                           </div>
                     </Popover>
+
+
+                    
+                    <div
+                          // Show details on click
+                         
+                            className="flex items-center hover:bg-[#EEEEEE] rounded-md px-3 py-2 cursor-pointer"
+                          >
+                         
+                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.27825 18.9695H18.3032M15.797 5.18512L17.0501 6.43824M17.6767 2.05232C17.9237 2.29905 18.1197 2.59206 18.2534 2.91459C18.3871 3.23712 18.4559 3.58285 18.4559 3.932C18.4559 4.28115 18.3871 4.62687 18.2534 4.94941C18.1197 5.27194 17.9237 5.56495 17.6767 5.81168L5.77201 17.7163L0.759521 18.9695L2.01264 14.0271L13.9223 2.05733C14.3917 1.58562 15.0214 1.30766 15.6862 1.27865C16.3511 1.24963 17.0025 1.47167 17.5113 1.90069L17.6767 2.05232Z" stroke="#181818" stroke-width="1.27333" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+                            <span className="mx-2 text-sm">Edit</span>
+                          </div>
+
+
                         </div>
                       }
                     >
@@ -264,9 +323,32 @@ function Table() {
                   
                   </td>
                 </tr>
+
+
+
+
+               
+               
+
+
+                
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className="w-full flex flex-row  px-3  text-sm  my-3">
+          <nav className="flex flex-row "> <span className="mr-1 text-slate-400 mt-[0.8px] cursor-pointer">Prev</span>  <span className="mr-1 text-white border bg-[#8600D9] text-center  rounded-md p-1 justify-center items-center flex w-6 h-6 ">1</span>
+          
+          
+          <span className="mr-1  text-slate-900 border bg-whit text-center  rounded-md p-1 justify-center items-center flex w-6 h-6 hover:text-white hover:bg-[#8600D9] transition-all duration-150 ">2</span>
+
+          <span className="mr-1 text-slate-900 border bg-whit text-center  rounded-md p-1 justify-center items-center flex w-6 h-6 hover:text-white hover:bg-[#8600D9] transition-all duration-150 ">3</span>
+          <span className="mr-1 text-slate-900 border bg-whit text-center  rounded-md p-1 justify-center items-center flex w-6 h-6 hover:text-white hover:bg-[#8600D9] transition-all duration-150 ">4</span>
+          <span className="mr-1 text-slate-900 border bg-whit text-center  rounded-md p-1 justify-center items-center flex w-6 h-6 hover:text-white hover:bg-[#8600D9] transition-all duration-150 ">5</span>
+
+          <span className="mr-1 text-slate-700 mt-[0.8px] cursor-pointer hover:text-[#8600D9]">Next</span> 
+          </nav>
         </div>
       </div>
     </div>

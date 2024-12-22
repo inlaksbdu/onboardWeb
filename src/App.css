@@ -49,3 +49,46 @@
   transition: background-image 0.5s ease-in-out;
 
 }
+
+
+
+
+
+@keyframes wiggle {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(1deg);
+  }
+  50% {
+    transform: rotate(-1deg);
+  }
+  75% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes lightMove {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -500;
+  }
+}
+
+.wiggle-light-animation {
+  display: block;
+  margin: 0 auto;
+  animation: wiggle 0.4s ease-in-out infinite;
+}
+
+.path {
+  stroke-dasharray: 500;
+  stroke-dashoffset: 0;
+  animation: lightMove 10s linear infinite, wiggle 0.4s ease-in-out infinite;
+}

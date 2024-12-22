@@ -151,7 +151,7 @@ function FaceRecognition({setTab}) {
       <Link
               to="/onboarding"
               type="button"
-              onClick={()=>{setTab("tab3")}}
+              onClick={()=>{setTab("tab4")}}
               className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  font-semibold text-center  justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all "
             >
             Get started

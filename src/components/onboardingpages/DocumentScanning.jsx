@@ -1,11 +1,27 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import Select from "react-select";
-import { Link } from "react-router-dom";
 import logo from "../../assets/img/svg/logo.svg";
 import documentsvg from "../../assets/img/svg/document.svg";
+import { Camera } from "lucide-react";
+import CameraView from "./CameraView";
+
 
 function DocumentScanning({ setTab }) {
+  const [selectedIdType, setSelectedIdType] = useState(null);
+  const [frontImage, setFrontImage] = useState(null);
+  const [backImage, setBackImage] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [currentSide, setCurrentSide] = useState(null);
+  const [getStarted,setGetStarted] =useState(false);
+
+  const idTypes = [
+    { value: 'national_id', label: 'National ID Card', requiresBack: true },
+    { value: 'passport', label: 'Passport', requiresBack: false },
+    { value: 'drivers_license', label: 'Driver\'s License', requiresBack: true },
+  ];
+
+
   useEffect(() => {
     const elements = document.getElementsByClassName("css-1u9des2-indicatorSeparator");
     for (let i = 0; i < elements.length; i++) {
@@ -81,6 +97,102 @@ function DocumentScanning({ setTab }) {
     }),
   };
 
+
+  const handleCameraCapture = (imageData) => {
+    if (currentSide === 'front') {
+      setFrontImage(imageData);
+    } else {
+      setBackImage(imageData);
+    }
+    setShowCamera(false);
+    setCurrentSide(null);
+  };
+
+  const startCapture = (side) => {
+    setCurrentSide(side);
+    setShowCamera(true);
+  };
+
+  const renderImageCapture = () => {
+    const isBackRequired = selectedIdType?.requiresBack;
+    const isFrontComplete = !!frontImage;
+    const isBackComplete = !!backImage;
+    console.log(selectedIdType)
+
+    return (
+      <div className="w-full space-y-4">
+        {/* Front Image Capture */}
+        <div className="w-full flex flex-col items-center gap-2">
+          <div className="text-sm font-medium text-gray-700">Front of {selectedIdType&&selectedIdType?.label}</div>
+          {frontImage ? (
+            <div className="relative w-64 h-40">
+              <img src={frontImage} alt="Front ID" className="w-full h-full object-cover rounded-lg" />
+              <button
+                onClick={() => setFrontImage(null)}
+                className="absolute top-2 right-2 bg-red-500 text-white py-1 px-[0.4rem] rounded-full text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <div className="w-64 h-40 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <button
+                  onClick={() => startCapture('front')}
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <Camera className="w-8 h-8 text-gray-400" />
+                  <span className="text-sm text-gray-500">Capture Front</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Back Image Capture (if required) */}
+        {isBackRequired && isFrontComplete && (
+          <div className="w-full flex flex-col items-center gap-2">
+            <div className="text-sm font-medium text-gray-700">Back of {selectedIdType.label}</div>
+            {backImage ? (
+              <div className="relative w-64 h-40">
+                <img src={backImage} alt="Back ID" className="w-full h-full object-cover rounded-lg" />
+                <button
+                  onClick={() => setBackImage(null)}
+                  className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div className="w-64 h-40 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <button
+                    onClick={() => startCapture('back')}
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <Camera className="w-8 h-8 text-gray-400" />
+                    <span className="text-sm text-gray-500">Capture Back</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Continue Button */}
+        {((isBackRequired && isFrontComplete && isBackComplete) || 
+          (!isBackRequired && isFrontComplete)) && (
+          <button
+          onClick={()=>{setTab("tab3")}}
+            className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] w-full inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
+          >
+            Continue
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full h-full justify-center items-center overflow-y-scroll">
       <div className="w-full flex justify-center items-center mt-11 pb-10 pt-3 max-sm:px-4 max-xs:px-3">
@@ -108,22 +220,70 @@ function DocumentScanning({ setTab }) {
             <div className="w-full flex flex-col justify-center items-center mt-0">
               <div className="w-full flex justify-center items-center flex-col">
                 <div className="w-[90%] flex flex-col text-center justify-center items-center">
-                  <div className="text-slate-900 font-semibold w-full">
+                 
+
+                  {!selectedIdType ? (
+            <>
+
+            <div className="text-slate-900 font-semibold w-full">
                     Scan your document with Onboard
                   </div>
                   <div className="text-slate-600 w-full">
                     Upload or capture an image of your ID document. Make sure all details are
                     clearly visible.
                   </div>
+
+{
+  getStarted?
+
+            <select
+                 value={selectedIdType?.value || ""}
+                 onChange={(e) => setSelectedIdType(idTypes.find(option => option.value === e.target.value))}
+      className="rounded-md my-2 shadow-md  px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border  appearance-none focus:outline-none focus:ring-0"
+    >
+      <option value=" " selected hidden>Select id type</option>
+      {idTypes.map((option) => (
+        <option key={option.value} value={option.value}  >
+          {option.label}
+        </option>
+      ))}
+    </select>:""
+}
+            </>
+          ) : (
+            <div className="w-full px-4">
+              {renderImageCapture()}
+            </div>
+          )}
+             
                 </div>
-                <Link
-                  to="/onboarding"
+
+                {showCamera && (
+        <CameraView 
+          onCapture={handleCameraCapture}
+          onClose={() => {
+            setShowCamera(false);
+            setCurrentSide(null);
+          }}
+        />
+      )}
+
+
+      {
+        getStarted?
+        
+        "":
+        <button
+                  
                   type="button"
-                  onClick={()=>{setTab("tab4")}}
+                  onClick={()=>{setGetStarted(true)}}
                   className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
                 >
                   Get started
-                </Link>
+                </button>
+
+      }
+               
               </div>
             </div>
           </div>
