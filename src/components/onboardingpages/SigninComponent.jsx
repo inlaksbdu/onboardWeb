@@ -1,16 +1,251 @@
 import logo from "../../assets/img/svg/logo.svg";
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { Link } from "react-router-dom";
 import Select from "react-select";
+import googlesvg from "../../assets/img/svg/google.svg"
 import PropTypes from "prop-types";
-
+import { faInfoCircle,faCheckCircle} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useRegisterMutation,useLoginMutation } from "../../features/auth/authApiSlice";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../features/auth/authSlice";
 
 function SigninComponent({setTab}) {
+  const [register,{isLoading}]=useRegisterMutation()
+  const [login,{isLoadig:isLoginInisLoading}]=useLoginMutation()
+  const [isdone,setisDone]=useState(false )
+  const [responseError,setRsponseError]=useState()
+  const dispatch = useDispatch();
 
- 
+  const [formData, setFormData] = useState({
+    email: "",
+    phone: "",
+    password: "",
+    countryCode: "+233",
+    account_type:localStorage.getItem("selectedOption") || ""
+  });
+
+  const [errors, setErrors] = useState({
+    email: "",
+    phone: "",
+    password: ""
+  });
+
+
   useEffect(() => {
     const elements = document.getElementsByClassName('css-1u9des2-indicatorSeparator');
-import googlesvg from "../../assets/img/svg/google.svg"
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].style.display = "none";
+    }
+  }, []);
+
+  // Format phone number to match XXX XXX XXXX
+  const formatPhoneNumber = (phoneNumber) => {
+    // Remove all non-digit characters
+    const cleaned = phoneNumber.replace(/\D/g, "");
+    
+    // Apply formatting
+    if (cleaned.length <= 3) {
+      return cleaned;
+    } else if (cleaned.length <= 6) {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+    } else {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 10)}`;
+    }
+  };
+
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    const digits = phone.replace(/\D/g, "");
+    return digits.length >= 9 && digits.length <= 10;
+  };
+
+  
+  const validatepasword2 = (password) => {
+    return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password)
+  };
+
+
+
+  
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+  });
+
+  const validatePassword = (password) => {
+    setPasswordValidation({
+      minLength: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+    });
+     password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password)?  setErrors(prev => ({
+      ...prev,
+      password:""
+    })):""
+  };
+
+
+  const [openpasswordinfo,setOpenpasswordinfo]=useState(false)
+const handlePasswordFocus = () => {
+  setOpenpasswordinfo(true)
+};
+
+const handlePasswordBlur = () => {
+  setOpenpasswordinfo(false);
+};
+
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === "phone") {
+      const formattedPhone = formatPhoneNumber(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedPhone
+      }));
+
+      setErrors(prev => ({
+        ...prev,
+        phone: validatePhone(value) ? "" : "Please enter a valid phone number"
+      }));
+    } else if (name === "email") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+
+      setErrors(prev => ({
+        ...prev,
+        email: validateEmail(value) ? "" : "Please enter a valid email"
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+
+      setErrors((prev) => ({
+        ...prev,
+        password: validatePassword(value) ? "" : "Password is invalid.",
+      }));
+      validatePassword(value);
+    }
+  };
+
+  const handleCountryCodeChange = (selectedOption) => {
+    setFormData(prev => ({
+      ...prev,
+      countryCode: selectedOption.value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate all fields
+    console.log(formData)
+    const newErrors = {
+      email: validateEmail(formData.email) ? "" : "Please enter a valid email",
+      phone: validatePhone(formData.phone) ? "" : "Please enter a valid phone number",
+      password: validatepasword2(formData.password) ? "" : "Please enter a valid password ",
+
+
+    };
+
+
+    setErrors(newErrors);
+    
+
+
+    // Check if there are any errors
+    if (!Object.values(newErrors).some(error => error)) {
+      // Format the phone number for submission
+      const fullPhoneNumber = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`;
+
+   try{
+
+    const response = await register({
+      "email": formData.email,
+      "phone": fullPhoneNumber,
+      "account_type": formData.account_type,
+      "role": "user",
+      "password": formData.password
+    }).unwrap();
+    console.log(response);
+  
+    const formBody = new URLSearchParams();
+    formBody.append('grant_type', 'password');
+    formBody.append('username', formData.email);
+    formBody.append('password', formData.password);
+    
+
+        formBody.append('client_id', "");
+
+        formBody.append('client_secret', "");
+    
+
+    const signindata = await login({ body: formBody }).unwrap();
+
+    if (signindata.access_token) {
+      
+            dispatch(setCredentials({access:signindata.access_token,refresh:signindata.refresh_token}))
+        setisDone(true);
+        // Handle successful login (e.g., redirect)
+    }
+   
+    setTimeout(() => {
+      setFormData({
+        email: "",
+        phone: "",
+        password: "",
+        countryCode: "+233",
+        account_type: localStorage.getItem("selectedOption") || ""
+      })
+      setTab("tab2"); // Navigate to the next tab or page
+    }, 1500);
+   }catch(e){
+    console.log(e)
+    if (e.data.length <150){
+
+    
+    setRsponseError(e.data)
+    
+   }
+   else{
+    setRsponseError("An error occured,Try again !")
+
+    
+   }
+      
+  }
+      
+    
+    }
+  };
+
+
+  
+
+ 
+
+
+  
+
+
+
+  useEffect(() => {
+    const elements = document.getElementsByClassName('css-1u9des2-indicatorSeparator');
     for (let i = 0; i < elements.length; i++) {
       elements[i].style.display = "none";
     }
@@ -211,6 +446,27 @@ import googlesvg from "../../assets/img/svg/google.svg"
 
           */}
          
+         {
+          responseError?
+          <div className="w-full my-3">
+         <div id="alert-border-2" className="flex items-center p-4 mb-4 text-red-800 border-t-4 border-red-300 bg-red-50 " role="alert">
+    <svg className="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+    </svg>
+    <div className="ms-3 text-sm font-medium">
+            {responseError.detail}
+    </div>
+    <button type="button" onClick={()=>setRsponseError()} className="ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 "  data-dismiss-target="#alert-border-2" aria-label="Close">
+      <span className="sr-only">Dismiss</span>
+      <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+      </svg>
+    </button>
+</div>
+         </div> 
+          :""
+         }
+         
 
           
             <div className="w-full ">
@@ -220,9 +476,14 @@ import googlesvg from "../../assets/img/svg/google.svg"
         <div className="relative w-full mb-5">
   <input
     type="text"
-    id="floating_filled"
+    id="email"
+    name="email"
     className="block rounded-md px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border  appearance-none focus:outline-none focus:ring-0 peer"
     placeholder=" "
+    value={formData.email}
+    onChange={handleInputChange}
+   
+   
   />
   <label
     htmlFor="floating_filled"
@@ -230,6 +491,12 @@ import googlesvg from "../../assets/img/svg/google.svg"
   >
     Email
   </label>
+
+  {errors.email && <p className="text-red-500 text-xs mt-1">             <FontAwesomeIcon icon={faInfoCircle}    className="mr-1 opacity-80"  />
+  {errors.email}</p>}
+
+  
+
 </div>
 
 
@@ -241,40 +508,126 @@ import googlesvg from "../../assets/img/svg/google.svg"
        
         styles={customStyles2}
         defaultValue={countryOptions1[0]}
+        onChange={handleCountryCodeChange}
       
 
       />
-                  <input type="password" id="last_nam" className="bg-white   placeholder:text-sm focus:placeholder:text-white  text-slate-700 border placeholder:text-slate-600 border-slate-200  text-base rounded-r-lg  transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5 " placeholder="Phone" required />
+                  <input 
+                  
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  type="tel" id="phone" name="phone" className="bg-white   placeholder:text-sm focus:placeholder:text-white  text-slate-700 border placeholder:text-slate-600 border-slate-200  text-base rounded-r-lg  transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow block w-full p-2.5 " placeholder="Phone" required />
 
             </div>
-
+            {errors.phone && <p className="text-red-500 text-xs mt-1">  <FontAwesomeIcon icon={faInfoCircle}    className="mr-1 opacity-80"  />{errors.phone}</p>}
 
 
         </div>
        
-        <div className="relative w-full mb-5">
-  <input
-    type="text"
-    id="floating_filled"
-    className="block rounded-md px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border  appearance-none focus:outline-none focus:ring-0 peer"
-    placeholder=" "
-  />
-  <label
-    htmlFor="floating_filled"
-    className="absolute text-sm text-slate-600 duration-300 transform scale-75 -translate-y-5 top-3 z-10 origin-[0] start-2.5 bg-white px-1 peer-focus:text-slate-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:-translate-y-5"
-  >
-    Password
-  </label>
-</div>
+
+        <div className="w-full">
+      <div className="relative w-full mb-5">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          className="block rounded-md px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border  appearance-none focus:outline-none focus:ring-0 peer"
+          placeholder=" "
+          value={formData.password}
+          onChange={handleInputChange}
+          onBlur={handlePasswordBlur}
+          onFocus={handlePasswordFocus}
+        />
+        <label
+          htmlFor="password"
+          className="absolute text-sm text-slate-600 duration-300 transform scale-75 -translate-y-5 top-3 z-10 origin-[0] start-2.5 bg-white px-1 peer-focus:text-slate-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:-translate-y-5"
+        >
+          Password
+        </label>
+
+{
+  openpasswordinfo?
+  <div className="absolute bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs text-slate-600 top-12 left-0 z-20 w-full">
+          <ul>
+            <li>
+              {passwordValidation.minLength ? (
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-1 text-green-500" />
+
+              ) : (
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
+
+              )}
+              Minimum of 8 characters
+            </li>
+            <li >
+              {passwordValidation.uppercase ? (
+
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-1 text-green-500" />
+
+              ) : (
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
+
+              )}
+              At least 1 uppercase letter
+            </li>
+            <li >
+              {passwordValidation.lowercase ? (
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-1 text-green-500" />
+
+              ) : (
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
+
+              )}
+              At least 1 lowercase letter
+            </li>
+            <li className="" >
+              {passwordValidation.number ? (
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-1 text-green-500" />
+              ) : (
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
+              )}
+              At least 1 number
+            </li>
+          </ul>
+        </div>
+
+  :""
+}
+       
+
+        {errors.password && (
+          <p className="text-red-500 text-xs mt-1">
+            <FontAwesomeIcon icon={faInfoCircle} className="mr-1 opacity-80" />
+            {errors.password}
+          </p>
+        )}
+      </div>
+    </div>
+
 
 
         <Link
                 to="/onboarding"
                 type="button"
-                onClick={()=>{setTab("tab2")}}
+                onClick={handleSubmit}
+
                 className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  font-semibold text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all w-full"
               >
-                Create account
+              {
+                isLoading || isLoginInisLoading?
+                (<><div className="spinner mr-4"></div> Loading...</>)
+                :
+                    
+                
+                isdone?
+                (<> 
+                  <div className="wrapper mr-2"> <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+</svg>
+</div> Done </> ):"create account"
+                
+                          
+              }
+                
              
               </Link>
             </div>

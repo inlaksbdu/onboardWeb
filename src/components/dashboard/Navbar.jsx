@@ -8,7 +8,7 @@ function Navbar({sidebarReduced,toggleSidebar}) {
    
     
 
-<nav className={` bg-[#FBFBFB] transition-all duration-300 ease-in-out border-gray-200 ${sidebarReduced?" lg:pl-[10%]":"2lg:pl-[22%] pl-[25%] "} max-lg:pl-0  border-b shadow-md shadow-slate-100 w-full   absolute top-0  `}>
+<nav className={` bg-[#FBFBFB] transition-all duration-300 ease-in-out border-gray-200 ${sidebarReduced?" lg:pl-[10%]":"2lg:pl-[22%] pl-[25%] "} max-lg:pl-0  border-b shadow-md shadow-slate-100 w-full   absolute top-0  z-20 `}>
   <div className="flex items-center justify-between  px-4 py-3 w-full">
 
 <div className='text-start  flex justify-start'>

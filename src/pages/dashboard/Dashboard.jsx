@@ -1,5 +1,8 @@
 import Card from '../../components/dashboard/Card';
 import Table from '../../components/dashboard/Table';
+import OnboardedCustomersChat from '../../components/charts/OnboardedCustomersChat';
+import AgeGenderChart from '../../components/charts/AgeGenderChart';
+import DemographyChart from '../../components/charts/DemographyCharts';
 function Dashboard() {
 
   const cards=[  {
@@ -72,8 +75,20 @@ function Dashboard() {
        <Card key={index} action={card.action}  title={card.title} time={card.time} number={card.number} percentage={card.percentage} icon={card.icon}  />
       ))}
     </div>
+    <div className='w-full   flex xl:flex-row flex-col  justify-between'>
+    <div className='  xl:w-[68%] w-full ' >
+      <OnboardedCustomersChat />
+    </div>
 
-    <Table/>
+    <div className='xl:w-[30%] w-full justify-between max-xl:mt-5  max-md:flex-col flex xl:flex-col'>
+      <AgeGenderChart/>
+      <DemographyChart/>
+    </div>
+
+    </div>
+    
+    <div  className="my-5 w-full"></div>
+    <Table />
     </div>
   )
 }

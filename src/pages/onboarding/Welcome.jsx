@@ -13,7 +13,7 @@ function Welcome() {
 
   const handleNextClick = () => {
     if (selectedOption !== null) {
-      const selectedValue = ["Individual", "Groups", "SME"][selectedOption];
+      const selectedValue = ["individual", "group", "sme"][selectedOption];
       localStorage.setItem("selectedOption", selectedValue); // Save to local storage
       navigate(`/onboarding`); 
     }
@@ -41,7 +41,7 @@ function Welcome() {
             </p>
             <div className="w-full flex flex-col justify-center items-center mt-5">
               {/* Radio Buttons */}
-              {["Individual", "Groups", "SME"].map((label, index) => (
+              {["individual", "group", "sme"].map((label, index) => (
                 <div
                   key={index}
                   className={`w-[90%] group transition-all duration-300 ease-in-out ${
