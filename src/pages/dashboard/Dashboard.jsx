@@ -3,7 +3,52 @@ import Table from '../../components/dashboard/Table';
 import OnboardedCustomersChat from '../../components/charts/OnboardedCustomersChat';
 import AgeGenderChart from '../../components/charts/AgeGenderChart';
 import DemographyChart from '../../components/charts/DemographyCharts';
+import { useGetCustomersMutation} from '../../features/admin/adminSlice';
+import { useEffect ,useState} from 'react';
+import Skeleton ,{ SkeletonTheme}from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 function Dashboard() {
+
+
+  const [getCustomers, { isLoading }] = useGetCustomersMutation();
+  const [totalCustomers, setTotalCustomers] = useState();
+  const [onboardedCustomers, setOnboardedCustomers] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState({
+    stage: "",
+    account_type: ""
+  });
+
+  const handleGetCustomer = async (page = 1, filters = {}) => {
+    try {
+      const response = await getCustomers({
+        page,
+        page_size: 10,
+        ...filters
+      }).unwrap();
+      
+      setTotalCustomers(response.total);
+      setOnboardedCustomers(response.customers);
+      setTotalPages(Math.ceil(response.total / 10));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    handleGetCustomer(currentPage, filters);
+  }, [currentPage, filters]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
 
   const cards=[  {
     title: 'Total Onboarded Customers',
@@ -15,7 +60,7 @@ function Dashboard() {
         />
       </svg>
     ),
-    number: 1000,
+    number: totalCustomers && totalCustomers,
     percentage: '12%',
     time: 'from Last month',
     action: 'increase', // Action as string ("increase" or "decrease")
@@ -72,23 +117,82 @@ function Dashboard() {
     </div>
     <div className='w-full mb-7   grid md:grid-cols-3 gap-y-5 xs:grid-cols-2  xl:grid-cols-4 gap-x-5 '>
     {cards.map((card, index) => (
-       <Card key={index} action={card.action}  title={card.title} time={card.time} number={card.number} percentage={card.percentage} icon={card.icon}  />
+      
+        isLoading?
+        
+        <SkeletonTheme key={index} baseColor="#a118f508" highlightColor="#ffff">
+  
+      <Skeleton height={"130px"} className='shadow' />
+    
+  </SkeletonTheme>
+
+        :
+        <Card key={index} action={card.action}  title={card.title} time={card.time} number={card.number} percentage={card.percentage} icon={card.icon}  />
+
+      
       ))}
     </div>
     <div className='w-full   flex xl:flex-row flex-col  justify-between'>
     <div className='  xl:w-[68%] w-full ' >
+
+    {
+      
+isLoading?
+
+<SkeletonTheme baseColor="#a118f508" highlightColor="#ffff">
+  
+  <Skeleton height={"400px"} className='shadow' />
+
+</SkeletonTheme>
+
+      :
+
       <OnboardedCustomersChat />
+    }
+      
+
+
     </div>
 
     <div className='xl:w-[30%] w-full justify-between max-xl:mt-5  max-md:flex-col flex xl:flex-col'>
-      <AgeGenderChart/>
-      <DemographyChart/>
+      {
+        isLoading?
+        <SkeletonTheme baseColor="#a118f508" highlightColor="#ffff">
+  
+  <Skeleton height={"200px"} className='shadow mb-4' />
+
+</SkeletonTheme>
+:
+<AgeGenderChart/>
+
+
+      }
+
+      {
+        isLoading?
+        <SkeletonTheme baseColor="#a118f508" highlightColor="#ffff">
+  
+  <Skeleton height={"200px"} className='shadow' />
+
+</SkeletonTheme>
+:
+<DemographyChart/>
+
+
+      }
+      
     </div>
 
     </div>
     
     <div  className="my-5 w-full"></div>
-    <Table />
+   
+ 
+        <Table
+         
+
+        />
+     
     </div>
   )
 }

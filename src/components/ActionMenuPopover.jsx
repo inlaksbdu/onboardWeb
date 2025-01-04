@@ -67,7 +67,7 @@ const DetailsPopover = ({ profileImage, clientData }) => {
               <div>
                 <span className="text-slate-600 text-sm">
                   Onboarding Status:
-                  <span className="bg-[#5AD0000D] bg-opacity-30 text-[#02B62F] mx-2 font-medium rounded-lg p-2">
+                  <span className={`${clientData.status==="Completed"?"bg-[#5AD0000D]":"bg-[#C2C20014]"} bg-opacity-30  ${clientData.status==="Completed"?"text-[#02B62F]":"text-[#B4BA00]"} mx-2 font-medium rounded-lg p-2`}>
                     {clientData.status}
                   </span>
                 </span>

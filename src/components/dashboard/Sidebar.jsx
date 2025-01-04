@@ -134,7 +134,7 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
 
 
 
-<a
+<Link to="/admin/settings"
   className="group  flex w-[90%] px-6 rounded-md py-3 bg-white hover:bg-text-gradient hover:to-[#470073EB] transition duration-500 ease-in-out transform text-center"
 >
 
@@ -173,7 +173,7 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
 
 
   <span
-            className={`transition-all  text-slate-600 font-medium duration-700 ease-in-out ${
+            className={`transition-all   text-slate-600 font-medium duration-700 ease-in-out ${
               sidebarReduced ? "lg:w-0 lg:overflow-hidden" : "w-fit"
             }`}
             style={{ whiteSpace: "nowrap" }}
@@ -182,7 +182,7 @@ function Sidebar({sidebarReduced,toggleSidebar}) {
        
 
           </span>
-</a>
+</Link>
 
 </div>
     </div>

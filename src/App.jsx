@@ -8,6 +8,9 @@ import Dashboard from './pages/dashboard/Dashboard';
 import Customer from './pages/dashboard/Customer';
 import SystemAnalytics from './pages/dashboard/SystemAnalytics';
 import UserDetails from './pages/dashboard/UserDetails';
+import AdminLogin from './pages/AdminLogin';
+import AuthLayout from './pages/authLayout';
+import Settings from './pages/dashboard/Settings';
 function App() {
  
 
@@ -21,10 +24,18 @@ function App() {
       <Route path="/" element={ <Welcome/>} />
       <Route path="/onboarding" element={ <OnboardingLayout/>} />
       <Route path="/onboarding" element={ <OnboardingLayout/>} />
+      <Route path="/admin/login" element={ <AdminLogin/>} />
+
+
+      <Route element={<AuthLayout />}>
+
+
       <Route path="/admin" element={ <Layout><Dashboard/></Layout>} />
       <Route path="/admin/customers" element={ <Layout><Customer/></Layout>} />
       <Route path="/admin/system-analytics" element={ <Layout><SystemAnalytics/></Layout>} />
       <Route path="/admin/user-details/:id" element={ <Layout><UserDetails/></Layout>} />
+      <Route path="/admin/settings" element={ <Layout><Settings/></Layout>} />
+      </Route>
 
 
 
