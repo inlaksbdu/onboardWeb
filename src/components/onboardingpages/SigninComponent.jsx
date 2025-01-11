@@ -6,13 +6,15 @@ import googlesvg from "../../assets/img/svg/google.svg"
 import PropTypes from "prop-types";
 import { faInfoCircle,faCheckCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useRegisterMutation,useLoginMutation } from "../../features/auth/authApiSlice";
+import { useRegisterMutation,useLoginMutation,useSendOTPMutation } from "../../features/auth/authApiSlice";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
+import { Send } from "lucide-react";
 
 function SigninComponent({setTab}) {
   const [register,{isLoading}]=useRegisterMutation()
-  const [login,{isLoadig:isLoginInisLoading}]=useLoginMutation()
+
+  const [sendOTP,{isLoadig:isSendingOTP}]=useSendOTPMutation()
   const [isdone,setisDone]=useState(false )
   const [responseError,setRsponseError]=useState()
   const dispatch = useDispatch();
@@ -157,7 +159,6 @@ const handlePasswordBlur = () => {
     console.log(formData)
     const newErrors = {
       email: validateEmail(formData.email) ? "" : "Please enter a valid email",
-      phone: validatePhone(formData.phone) ? "" : "Please enter a valid phone number",
       password: validatepasword2(formData.password) ? "" : "Please enter a valid password ",
 
 
@@ -183,27 +184,23 @@ const handlePasswordBlur = () => {
       "password": formData.password
     }).unwrap();
     console.log(response);
-  
-    const formBody = new URLSearchParams();
-    formBody.append('grant_type', 'password');
-    formBody.append('username', formData.email);
-    formBody.append('password', formData.password);
+
+
     
-
-        formBody.append('client_id', "");
-
-        formBody.append('client_secret', "");
-    
-
-    const signindata = await login({ body: formBody }).unwrap();
-
-    if (signindata.access_token) {
+    if (response.access_token) {
       
-            dispatch(setCredentials({access:signindata.access_token,refresh:signindata.refresh_token}))
-        setisDone(true);
-        // Handle successful login (e.g., redirect)
-    }
-   
+      dispatch(setCredentials({access:response.access_token,refresh:response.refresh_token}))
+  setisDone(true);
+  // Handle successful login (e.g., redirect)
+}
+
+
+  
+
+const sendoptreponse=await sendOTP().unwrap()
+console.log(sendoptreponse)
+
+
     setTimeout(() => {
       setFormData({
         email: "",
@@ -212,11 +209,11 @@ const handlePasswordBlur = () => {
         countryCode: "+233",
         account_type: localStorage.getItem("selectedOption") || ""
       })
-      setTab("tab2"); // Navigate to the next tab or page
+      setTab("tab1.2"); // Navigate to the next tab or page
     }, 1500);
    }catch(e){
     console.log(e)
-    if (e.data.length <150){
+    if (e.data.detail.length <150){
 
     
     setRsponseError(e.data)
@@ -499,9 +496,9 @@ const handlePasswordBlur = () => {
 
 </div>
 
-
-
-        <div className='mb-5'>
+{
+  /*
+  <div className='mb-5'>
             <div className="w-full flex  flex-row ">
             <Select
         options={countryOptions1}
@@ -523,7 +520,10 @@ const handlePasswordBlur = () => {
 
 
         </div>
-       
+       */
+}
+
+        
 
         <div className="w-full">
       <div className="relative w-full mb-5">
@@ -607,15 +607,13 @@ const handlePasswordBlur = () => {
 
 
         <Link
-                to="/onboarding"
                 type="button"
                 onClick={handleSubmit}
 
                 className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  font-semibold text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all w-full"
               >
               {
-                isLoading || isLoginInisLoading?
-                (<><div className="spinner mr-4"></div> Loading...</>)
+                isLoading || isSendingOTP?(<><div className="spinner mr-4"></div> Loading...</>)
                 :
                     
                 

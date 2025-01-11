@@ -25,7 +25,59 @@ export const authApiSlice = apiSlice.injectEndpoints({
                     'Accept': 'application/json'
                 }
             })
-        })
+        }),
+
+        sendOTP: builder.mutation({
+            query:(body) => ({
+                url: '/auth/send-otp-email',
+                method: 'POST',
+                body,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+        }),
+
+        sendOTPSMS: builder.mutation({
+            query:(body) => ({
+                url: '/auth/send-otp-sms',
+                method: 'POST',
+                body:{...body},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+        }),
+
+
+
+        verifyEmail: builder.mutation({
+            query: (otp) => ({
+                url: '/auth/verify-email',
+                method: 'POST',
+                params:otp,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+        }),
+
+        verifyPhone: builder.mutation({
+            query: (otp) => ({
+                url: '/auth/verify-phone',
+                method: 'POST',
+                params:otp,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+        }),
+
+
     })
 });
 
@@ -35,4 +87,8 @@ export const authApiSlice = apiSlice.injectEndpoints({
 export const {
     useLoginMutation,
     useRegisterMutation,
+    useVerifyEmailMutation,
+    useSendOTPMutation,
+    useSendOTPSMSMutation,
+    useVerifyPhoneMutation,
 } = authApiSlice;

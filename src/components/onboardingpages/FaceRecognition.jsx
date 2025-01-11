@@ -1,14 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState ,useRef} from "react";
 import PropTypes from "prop-types";
 import Select from 'react-select';
 import face from "../../assets/img/svg/faceid.svg";
 import logo from "../../assets/img/svg/logo.svg";
+import { Camera } from 'lucide-react';
+
+
+const API_BASE_URL =  'https://onboarding-api.bdudcloud.com';
 
 function FaceRecognition({ setTab }) {
-  const [showLivenessCheck, setShowLivenessCheck] = useState(false);
-  const [livenessResult, setLivenessResult] = useState(null);
+
+  const [sessionId, setSessionId] = useState(null);
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const checkInterval = useRef(null);
 
   useEffect(() => {
     // Remove separator from react-select
@@ -18,18 +25,7 @@ function FaceRecognition({ setTab }) {
     }
   }, []);
 
-  const handleLivenessSuccess = () => {
-    setLivenessResult(true);
-    setShowLivenessCheck(false);
-    // Add any additional success handling here
-    // For example, you might want to move to the next step
-    // setTab('nextStep');
-  };
 
-  const handleLivenessError = (error) => {
-    setError(error);
-    setShowLivenessCheck(false);
-  };
 
   const countryOptions = [
     {
@@ -99,6 +95,149 @@ function FaceRecognition({ setTab }) {
     }),
   };
 
+
+
+  const initializeCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } 
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      setError('Failed to access camera');
+      console.error(err);
+    }
+  };
+
+  const createSession = async () => {
+    try {
+      setStatus('starting');
+      const response = await fetch(`${API_BASE_URL}/onboarding/live-check-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJ1c2VyX2lkIjoiNGQ3ODJlMGItMzY5MS00ZTc2LTk4NjgtYzljN2Q1M2I3NzBjIiwiZXhwIjoxNzM2NDY2NzUxLCJ0eXBlIjoiYWNjZXNzIiwianRpIjoiSEtwd3BrdUdXcXF3a1FaQ0o3Q1hmT18xTmwxdGhFVnpDdEVyS0F2MmgzTSJ9.nuu1eo9x9k_3YRpBQfCjTTkWWd8udEN-9BunX3lzrEc`,
+
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create session');
+      }
+      
+      const data = await response.json();
+      setSessionId(data.sessionId);
+      await initializeCamera();
+      setStatus('ready');
+      
+      // Start polling for results once session is created
+      startPolling(data.sessionId);
+    } catch (err) {
+      setError(err.message);
+      setStatus('error');
+      console.error(err);
+    }
+  };
+
+  const startPolling = (sid) => {
+    checkInterval.current = setInterval(async () => {
+      try {
+        const result = await checkLivenessResult(sid);
+        if (result.status === 'completed') {
+          clearInterval(checkInterval.current);
+          setStatus(result.isLive ? 'success' : 'failed');
+        }
+      } catch (err) {
+        clearInterval(checkInterval.current);
+        setError('Failed to get liveness result');
+        setStatus('error');
+      }
+    }, 2000); // Poll every 2 seconds
+  };
+
+  const checkLivenessResult = async (sid) => {
+    const response = await fetch(`${API_BASE_URL}/onboarding/live-check-result/${sid}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJ1c2VyX2lkIjoiNGQ3ODJlMGItMzY5MS00ZTc2LTk4NjgtYzljN2Q1M2I3NzBjIiwiZXhwIjoxNzM2NDY2NzUxLCJ0eXBlIjoiYWNjZXNzIiwianRpIjoiSEtwd3BrdUdXcXF3a1FaQ0o3Q1hmT18xTmwxdGhFVnpDdEVyS0F2MmgzTSJ9.nuu1eo9x9k_3YRpBQfCjTTkWWd8udEN-9BunX3lzrEc`,
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get liveness result');
+    }
+
+    return await response.json();
+  };
+
+  const performLivenessCheck = async () => {
+    try {
+      setStatus('checking');
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0);
+      
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+      const formData = new FormData();
+      formData.append('image', blob);
+
+      // Send the image to your backend endpoint
+      // Note: Your backend should handle sending this to Azure
+      const response = await fetch(`${API_BASE_URL}/onboarding/live-check-session/${sessionId}/image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit image');
+      }
+
+      // Result will be obtained through polling
+    } catch (err) {
+      setError('Failed to perform liveness check');
+      setStatus('error');
+      console.error(err);
+    }
+  };
+
+  const cleanup = async () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    if (checkInterval.current) {
+      clearInterval(checkInterval.current);
+    }
+    if (sessionId) {
+      try {
+        await fetch(`${API_BASE_URL}/onboarding/live-check-session/${sessionId}`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.error('Failed to delete session:', err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => cleanup();
+  }, []);
+
+  const resetCheck = async () => {
+    await cleanup();
+    setStatus('idle');
+    setError(null);
+    setSessionId(null);
+  };
+
+
   return (
     <div className="w-full h-full justify-center items-center overflow-y-scroll">
       <div className="w-full flex justify-center items-center mt-11 pb-10 pt-3 max-sm:px-4 max-xs:px-3">
@@ -136,28 +275,92 @@ function FaceRecognition({ setTab }) {
                 Scan your face within to your Identity.
               </div>
               
-              {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
-                  {error}
-                </div>
-              )}
-
-              {livenessResult && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-700">
-                  Face verification successful!
-                </div>
-              )}
+              
             </div>
 
+
             <button
-              onClick={() => setShowLivenessCheck(true)}
               type="button"
               className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
-              disabled={loading}
             >
-              {loading ? 'Processing...' : 'Get started'}
+            Get Sarted
             </button>
+
+
+
           </div>
+
+
+    
+          <div className="w-full max-w-md mx-auto p-4">
+      <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4 shadow-lg">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
+        />
+        {status === 'idle' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
+            <Camera className="w-12 h-12 text-gray-400" />
+          </div>
+        )}
+        {status === 'checking' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {status === 'idle' && (
+          <button
+            onClick={createSession}
+            className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+          >
+            Start Liveness Check
+          </button>
+        )}
+        
+        {status === 'ready' && (
+          <button
+            onClick={performLivenessCheck}
+            className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors"
+          >
+            Perform Check
+          </button>
+        )}
+
+        {status === 'success' && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+            Liveness check passed successfully!
+          </div>
+        )}
+        
+        {status === 'failed' && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            Liveness check failed. Please try again.
+          </div>
+        )}
+
+        {(status === 'success' || status === 'failed' || status === 'error') && (
+          <button
+            onClick={resetCheck}
+            className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
+          >
+            Try Again
+          </button>
+        )}
+      </div>
+    </div>
+
         </div>
       </div>
 

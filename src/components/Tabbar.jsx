@@ -8,7 +8,7 @@ function Tabbar({ currentTab, setTab }) {
         <span
           onClick={() => setTab('tab1')} // When clicked, this sets the current tab to "tab1"
           className={`w-[20%] h-1 block rounded-md cursor-pointer duration-300 ease-linear transition-all ${
-            currentTab === 'tab1' ? 'bg-[#8600D9]' : 'bg-[#D1D1D6]'
+            currentTab === 'tab1' || currentTab==='tab1.2'|| currentTab==='tab1.3' || currentTab==='tab1.4' ? 'bg-[#8600D9]' : 'bg-[#D1D1D6]'
           }`}
         ></span>
         <span

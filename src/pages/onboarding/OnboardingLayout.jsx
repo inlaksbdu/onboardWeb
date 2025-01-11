@@ -5,6 +5,8 @@ import Tabbar from "../../components/Tabbar";
 import FaceRecognition from "../../components/onboardingpages/FaceRecognition";
 import DocumentScanning from "../../components/onboardingpages/DocumentScanning";
 import PersonalInformation from "../../components/onboardingpages/PersonalInformation";
+import VerifyEmail from "../../components/onboardingpages/VerifyEmail";
+import VerifyPhone from "../../components/onboardingpages/verifyPhone";
 function OnboardingLayout() {
   const [currentTab, setCurrentTab] = useState(() => {
     return localStorage.getItem("currentTab") || "tab1";
@@ -21,7 +23,7 @@ function OnboardingLayout() {
     if (newTab === currentTab) return;
 
     // Determine swipe direction based on tab order
-    const tabs = ["tab1", "tab2", "tab3", "tab4"];
+    const tabs = ["tab1","tab1.2",'tab1.3', "tab2", "tab3", "tab4"];
     const newDirection = tabs.indexOf(newTab) > tabs.indexOf(currentTab) ? 1 : -1;
     setDirection(newDirection);
 
@@ -60,7 +62,11 @@ function OnboardingLayout() {
           exit="exit"
           variants={variants}
         >         
+
           {currentTab === "tab1" && <SigninComponent setTab={changeTab} />}
+          {currentTab === "tab1.2" && <VerifyEmail setTab={changeTab} />}
+          {currentTab === "tab1.3" && <VerifyPhone setTab={changeTab} />}
+
           {currentTab === "tab2" && <DocumentScanning setTab={changeTab} />}
           {currentTab === "tab3" &&  <FaceRecognition setTab={changeTab} />}
           {currentTab === "tab4" && <PersonalInformation setTab={changeTab} />}
