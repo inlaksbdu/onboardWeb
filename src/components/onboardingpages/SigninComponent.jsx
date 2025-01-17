@@ -9,10 +9,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useRegisterMutation,useLoginMutation,useSendOTPMutation } from "../../features/auth/authApiSlice";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
-import { Send } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 function SigninComponent({setTab}) {
   const [register,{isLoading}]=useRegisterMutation()
+  
 
   const [sendOTP,{isLoadig:isSendingOTP}]=useSendOTPMutation()
   const [isdone,setisDone]=useState(false )
@@ -32,6 +33,7 @@ function SigninComponent({setTab}) {
     phone: "",
     password: ""
   });
+
 
 
   useEffect(() => {
@@ -401,24 +403,99 @@ console.log(sendoptreponse)
   
   
 
+
+  const { t, i18n } = useTranslation();
+
+  // Detect browser language on component mount
+  useEffect(() => {
+    const detectBrowserLanguage = () => {
+      const browserLang = navigator.language.split('-')[0]; // This gets 'en' from 'en-US'
+      const supportedLanguages = ['en', 'fr', 'es'];
+      
+      // Check if browser language is supported, otherwise default to 'en'
+      const defaultLang = supportedLanguages.includes(browserLang) ? browserLang : 'en';
+      
+      // Only change language if it's different from current
+      if (i18n.language !== defaultLang) {
+        i18n.changeLanguage(defaultLang);
+      }
+    };
+
+    detectBrowserLanguage();
+  }, [i18n]);
+
+
+  const languageOptions = [
+    {
+      value: "en",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          English
+          <img
+            src="https://flagcdn.com/w40/us.png"
+            alt="English"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+            className="rounded-full"
+          />
+        </div>
+      ),
+    },
+    {
+      value: "fr",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          Français
+          <img
+            src="https://flagcdn.com/w40/fr.png"
+            alt="French"
+            className="rounded-full"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+          />
+        </div>
+      ),
+    },
+    {
+      value: "es",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          Español
+          <img
+            src="https://flagcdn.com/w40/es.png"
+            alt="Spanish"
+            className="rounded-full"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+          />
+        </div>
+      ),
+    }
+  ];
+
+  const handleLanguageChange = (selectedOption) => {
+    i18n.changeLanguage(selectedOption.value);
+  };
+  const getCurrentLanguageOption = () => {
+    return languageOptions.find(option => option.value === i18n.language) || languageOptions[0];
+  };
+
   return (
     <div className="w-full h-full justify-center items-center overflow-scroll">
       <div className="w-full flex justify-center items-center mt-11 pb-10 pt-3 max-sm:px-4 max-xs:px-3">
         <div className="md:w-[50%] sm:w-[65%] xs:w-[80%] w-[96%] border pb-8 pt-3 max-md:px-3 md:px-5 rounded-lg shadow bg-[#FBFBFB59]">
-        <div className="w-full flex justify-end  px-4 mb-4"> <div>
-        <Select
-        options={countryOptions}
-        placeholder="Choose a country"
-        styles={customStyles}
-        defaultValue={countryOptions[0]}
-      
-
-      />
-        </div> </div>
+        <div className="w-full flex justify-end  px-4 mb-4">
+        <div>
+              <Select
+                    options={languageOptions}
+                styles={customStyles}
+                onChange={handleLanguageChange}
+                value={getCurrentLanguageOption()}
+                isSearchable={false}
+              />
+              
+            </div> </div>
           <div className="w-full flex justify-center items-center flex-col mb-4">
             <img src={logo} className="mb-2" alt="logo" />
             <h4 className="font-poppins font-semibold text-xl mb-1">
-              Sign in to Onboard
+             { t('Sign in to Onboard')}
             </h4>
            
           </div>
@@ -497,8 +574,7 @@ console.log(sendoptreponse)
 </div>
 
 {
-  /*
-  <div className='mb-5'>
+  /*<div className='mb-5'>
             <div className="w-full flex  flex-row ">
             <Select
         options={countryOptions1}

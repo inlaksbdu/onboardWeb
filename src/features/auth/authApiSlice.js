@@ -5,7 +5,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
         login: builder.mutation({
             query: credentials => ({
-                url: '/auth/token',
+                url: '/auth/login',
                 method: 'POST',
                 body: credentials.body,
                 credentials: 'include',
@@ -77,8 +77,23 @@ export const authApiSlice = apiSlice.injectEndpoints({
             })
         }),
 
+        
+        getCardData: builder.mutation({
+            query: () => ({
+                url: '/onboarding/card-data',
+                method: 'GET',
+                
+            })
+        }),
 
-    })
+
+   
+
+
+    }),
+    
+
+
 });
 
 
@@ -91,4 +106,5 @@ export const {
     useSendOTPMutation,
     useSendOTPSMSMutation,
     useVerifyPhoneMutation,
+    useGetCardDataMutation,
 } = authApiSlice;

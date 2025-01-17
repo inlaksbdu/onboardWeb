@@ -9,7 +9,7 @@ const authSlice = createSlice({
       : null,
     refresh: localStorage.getItem("refresh")
       ? decryptToken(localStorage.getItem("refresh"))
-      : null,
+      :null,
   },
   reducers: {
     setCredentials: (state, action) => {

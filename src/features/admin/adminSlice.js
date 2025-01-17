@@ -7,8 +7,8 @@ export const adminApiSlice = apiSlice.injectEndpoints({
                 url: '/admin/customers',
                 method: 'GET',
                 params: {
-                    page: params?.page || 1,
-                    page_size: params?.page_size || 10,
+                    page:  "1",
+                    page_size: "10",
                     stage: params?.stage || undefined,
                     account_type: params?.account_type || undefined
                 }
@@ -24,10 +24,19 @@ export const adminApiSlice = apiSlice.injectEndpoints({
                 }
             })
         }),
+
+        getMetrics: builder.mutation({
+            query: () => ({
+                url: '/admin/quick-stats',
+                method: 'GET',
+               
+            })
+        }),
     })
 });
 
 export const {
     useGetCustomersMutation,
-    useGetCutomerDetailMutation
+    useGetCutomerDetailMutation,
+    useGetMetricsMutation,
 } = adminApiSlice;

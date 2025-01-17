@@ -23,7 +23,7 @@ const Table = () => {
 
   const [getCustomers, { isLoading }] = useGetCustomersMutation();
 
-  const handleGetCustomer = async (page = 1, filters = {}) => {
+  const handleGetCustomer = async (page = "1", filters = {}) => {
     try {
       const response = await getCustomers({
         page,

@@ -20,11 +20,21 @@ function VerifyPhone({setTab}) {
     const [successdiv,setSuccess]=useState()
     const [tooshort,setTooShort]=useState()
     const [optsent,setOtpsent]=useState(false)
- 
+    const [optsentsuccess,setOtpsentSuccess]=useState(false)
+    const [optsentverified,setOtpVerified]=useState(false)
+
+
     const [formData, setFormData] = useState({
       phone: "",
       countryCode: "+233",
     });
+
+
+    const [formDataOtp, setFormDataOtp] = useState({
+      otp: "",
+      
+    });
+  
   
     useEffect(() => {
       const elements = document.getElementsByClassName('css-1u9des2-indicatorSeparator');
@@ -52,8 +62,23 @@ function VerifyPhone({setTab}) {
           }).unwrap();
           console.log(response)
           setOtpsent(true)
+          setOtpsentSuccess(true)
+          
           }catch(error){
-            setRsponseError(error.message)
+            
+            if (error.data.detail){
+              setRsponseError({
+                detail:error.data.detail
+              })
+            }
+            else{
+              setRsponseError({
+                detail:"please enter a valid phone number"
+              })
+  
+            }
+
+            console.log(error)
           }
     
 
@@ -101,6 +126,17 @@ function VerifyPhone({setTab}) {
      
     };
   
+    const handleInputChange2 = (e) => {
+      const { name, value } = e.target;
+      
+      ;
+      setFormDataOtp(prev => ({
+       ...prev,
+        [name]: value
+      }));
+    };
+     
+    
     const handleCountryCodeChange = (selectedOption) => {
       setFormData(prev => ({
         ...prev,
@@ -112,10 +148,10 @@ function VerifyPhone({setTab}) {
       e.preventDefault();
       
       // Validate all fields
-      console.log(formData)
+      console.log(formDataOtp) 
    
   
-  if (formData.otp.length !==6){
+  if (formDataOtp.otp.length !==6){
     setTooShort(true)
      
      return;
@@ -125,14 +161,24 @@ function VerifyPhone({setTab}) {
   
      try{
   
-      const response = await verifyOtp(formData).unwrap();
+      const response = await verifyOtp(formDataOtp).unwrap();
       console.log(response);
       setIsDone(true)
-    
+      setOtpVerified(true)
+      setOtpsent(false)
+      setTimeout(() => {
+        setFormData({
+          phone: "",
+          countryCode: "+233",
+        })
+        setTab("tab2"); // Navigate to the next tab or page
+      }, 1500);
      
-   
+      
      }catch(e){
       console.log(e)
+      setRsponseError(e.data)
+      setOtpsentSuccess(false)
    
   
       
@@ -189,7 +235,7 @@ const countryOptions1 = [
     {
       value: "+233",
       label: (
-        <div className="w-full justify-between items-center flex-row text-xs flex  " >
+        <div className="w-full justify-between items-center flex-row text-xs flex   " >
        
          
           <img
@@ -201,6 +247,23 @@ const countryOptions1 = [
           +233
         </div>
       ),
+
+    },
+      {
+        value: "+234",
+        label: (
+          <div className="w-full justify-between items-center flex-row text-xs flex   " >
+         
+           
+            <img
+              src="https://flagcdn.com/w40/ng.png"
+              
+              style={{ width: 17, height: 17, marginLeft: 10 }}
+              className="rounded-full"
+            />
+            +234
+          </div>
+        ),
     },
   
     
@@ -336,7 +399,7 @@ const countryOptions1 = [
         <div className="w-full flex justify-center items-center flex-col mb-4">
           <img src={logo} className="mb-2" alt="logo" />
           <h4 className="font-poppins font-semibold text-xl mb-1">
-            Verify your email
+            Verify your phone
           </h4>
          
         </div>
@@ -369,21 +432,52 @@ const countryOptions1 = [
        }
 
        {
-        optsent?
-        <div className="flex items-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
-  <svg className="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        optsentsuccess?
+        <div id="alert-3" className="flex w-full items-center p-4 mb-4 text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  <svg className="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
     <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
   </svg>
   <span className="sr-only">Info</span>
-  <div>
-    <span className="font-medium">Success alert!</span> Change a few things up and try submitting again.
+  <div className="ms-3 text-sm font-medium">
+  OTP sent successfully
   </div>
+  <button type="button" className="ms-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700" data-dismiss-target="#alert-3" aria-label="Close">
+    <span className="sr-only">Close</span>
+    <svg onClick={()=>{setOtpsentSuccess(false)}} className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+    </svg>
+  </button>
 </div>
+
 
 :
 ""
        }
        
+
+
+       {
+        optsentverified?
+        <div id="alert-3" className="flex w-full items-center p-4 mb-4 text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  <svg className="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+  </svg>
+  <span className="sr-only">Info</span>
+  <div className="ms-3 text-sm font-medium">
+  Phone number verified successfully
+  </div>
+  <button type="button" className="ms-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700" data-dismiss-target="#alert-3" aria-label="Close">
+    <span className="sr-only">Close</span>
+    <svg onClick={()=>{setOtpVerified(false)}} className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+    </svg>
+  </button>
+</div>
+
+
+:
+""
+       }
 
         
           <div className="w-full ">
@@ -422,8 +516,8 @@ const countryOptions1 = [
   name="otp"
   className="block rounded-md px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border  appearance-none focus:outline-none focus:ring-0 peer"
   placeholder=" "
-  value={formData.otp}
-  onChange={handleInputChange}
+  value={formDataOtp.otp}
+  onChange={handleInputChange2}
   min={6}
   max={6}
   onFocus={()=>{setTooShort(false)}}
@@ -483,7 +577,7 @@ const countryOptions1 = [
 </svg>
 </div> verified</> ):<><div className="spinner mr-4 "></div> <span>verfying</span></>
 
-:"verify email"
+:"verify phone"
               
                         
             }

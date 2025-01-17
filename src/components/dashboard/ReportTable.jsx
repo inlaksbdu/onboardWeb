@@ -66,14 +66,17 @@ const ReportTable = () => {
   return (
     <div className="pb-20 w-full">
       <div className="w-full flex flex-col justify-center items-center bg-white shadow-lg rounded-md border border-slate-100 py-3">
-        {/* Header section */}
+       
         <div className="w-full flex justify-between mb-10 px-3">
-          <h6 className="text-slate-800">Customer Details</h6>
+          <h6 className="text-slate-800">Report List </h6>
+           {/* Header section 
           <span className="text-slate-800 underline cursor-pointer">View all</span>
+          */}
         </div>
 
-        {/* Tabs and Export section */}
-        <div className="w-full justify-between flex px-3 mb-3">
+       
+        <div className="w-full justify-end flex px-3 mb-3">
+         {/* Tabs and Export section
           <div className="bg-[#ecebeb59] flex-row flex justify-center items-center text-slate-600 rounded-md px-2 py-1 border border-slate-100 shadow-md">
             {tabs.map((tab) => (
               <div
@@ -87,6 +90,7 @@ const ReportTable = () => {
               </div>
             ))}
           </div>
+           */}
 
           <div>
             <Popover

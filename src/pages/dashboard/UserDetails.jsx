@@ -1,7 +1,7 @@
 import { faTrashAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import id1 from "../../assets/img/idcard/id2.jpeg";
-import id2 from "../../assets/img/idcard/id1.jpg";
+import id1 from "../../assets/img/idcard/image.png";
+import id2 from "../../assets/img/idcard/image.png";
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useGetCutomerDetailMutation } from '../../features/admin/adminSlice';
@@ -17,6 +17,7 @@ function UserDetails() {
     try {
       const response = await getCustomer(id).unwrap();
       setUserDetails(response);
+      console.log(response)
     } catch (error) {
       console.error(error);
     }
@@ -29,11 +30,17 @@ function UserDetails() {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric'
-    });
+    if (date){
+      return date.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+      });
+    }
+    else{
+      return 'N/A';
+    }
+   
   };
 
   const getTimeSinceOnboarding = (dateString) => {
@@ -183,7 +190,8 @@ function UserDetails() {
               {isLoading ? <LoadingSkeleton /> : (
                 <>
                   {formatDate(userDetails?.IdCardData?.date_of_expiry)}
-                  <FontAwesomeIcon icon={faInfoCircle} className='text-red-400 text-xs ml-2' />
+                  {/*<FontAwesomeIcon icon={faInfoCircle} className='text-red-400 text-xs ml-2' />*/}
+                  
                 </>
               )}
             </span>
@@ -192,7 +200,7 @@ function UserDetails() {
           <div className='flex flex-row justify-between w-full mb-1'>
             <span className='font-medium text-slate-800'>Place of birth</span>
             <span className='text-slate-600 text-base'>
-              {isLoading ? <LoadingSkeleton /> : `${userDetails?.IdCardData?.city}, ${userDetails?.IdCardData?.country}`}
+              {isLoading ? <LoadingSkeleton /> : `${userDetails?.IdCardData?.city||""}, ${userDetails?.IdCardData?.country||""}`}
             </span>
           </div>
         </div>
@@ -215,15 +223,17 @@ function UserDetails() {
             {isLoading ? (
               <>
                 <div className='w-[48%] h-[300px]'>
-                  <LoadingSkeleton height={300} />
+                  <LoadingSkeleton height={300}  width="100%"/>
                 </div>
                 <div className='w-[48%] h-[300px]'>
-                  <LoadingSkeleton height={300} />
+                  <LoadingSkeleton height={300}  width="100%" />
                 </div>
               </>
             ) : (
               <>
+
                 <div className='w-[48%] h-[300px]'>
+               
                   <img className="h-full w-full object-cover transition-all duration-300 rounded-lg blur-sm hover:blur-none" src={id1} alt="ID Front" />
                 </div>
                 <div className='w-[48%] h-[300px]'>

@@ -1,47 +1,177 @@
 import logo from "../../assets/img/svg/logo.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
+import { useTranslation } from 'react-i18next';
 
 function Welcome() {
   const [selectedOption, setSelectedOption] = useState(null);
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+
+  // Detect browser language on component mount
+  useEffect(() => {
+    const detectBrowserLanguage = () => {
+      const browserLang = navigator.language.split('-')[0]; // This gets 'en' from 'en-US'
+      const supportedLanguages = ['en', 'fr', 'es'];
+      
+      // Check if browser language is supported, otherwise default to 'en'
+      const defaultLang = supportedLanguages.includes(browserLang) ? browserLang : 'en';
+      
+      // Only change language if it's different from current
+      if (i18n.language !== defaultLang) {
+        i18n.changeLanguage(defaultLang);
+      }
+    };
+
+    detectBrowserLanguage();
+  }, [i18n]);
 
   const handleRadioChange = (index) => {
     setSelectedOption(index);
   };
 
-
   const handleNextClick = () => {
     if (selectedOption !== null) {
       const selectedValue = ["individual", "group", "sme"][selectedOption];
-      localStorage.setItem("selectedOption", selectedValue); // Save to local storage
-      navigate(`/onboarding`); 
+      localStorage.setItem("selectedOption", selectedValue);
+      navigate(`/onboarding`);
     }
+  };
+
+  useEffect(() => {
+    const elements = document.getElementsByClassName('css-1u9des2-indicatorSeparator');
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].style.display = "none";
+    }
+  }, []);
+
+  const languageOptions = [
+    {
+      value: "en",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          English
+          <img
+            src="https://flagcdn.com/w40/us.png"
+            alt="English"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+            className="rounded-full"
+          />
+        </div>
+      ),
+    },
+    {
+      value: "fr",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          Français
+          <img
+            src="https://flagcdn.com/w40/fr.png"
+            alt="French"
+            className="rounded-full"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+          />
+        </div>
+      ),
+    },
+    {
+      value: "es",
+      label: (
+        <div className="w-full justify-between items-center flex-row text-xs flex">
+          Español
+          <img
+            src="https://flagcdn.com/w40/es.png"
+            alt="Spanish"
+            className="rounded-full"
+            style={{ width: 17, height: 17, marginLeft: 10 }}
+          />
+        </div>
+      ),
+    }
+  ];
+
+  const handleLanguageChange = (selectedOption) => {
+    i18n.changeLanguage(selectedOption.value);
+  };
+
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: "white",
+      color: "#374151",
+      border: state.isFocused ? "1px solid #9ca3af" : "1px solid #e5e7eb",
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      borderRadius: "0.5rem",
+      height: "33px",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        borderColor: "#d1d5db",
+      },
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: "0.5rem",
+      zIndex: 5,
+      height: "auto",
+      maxHeight: "250px",
+      overflowY: "auto",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "#e5e7eb" : "transparent",
+      color: "#374151",
+      padding: "5px 5px",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#9ca3af",
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#374151",
+    }),
+  };
+
+  // Find the current language option for the select
+  const getCurrentLanguageOption = () => {
+    return languageOptions.find(option => option.value === i18n.language) || languageOptions[0];
   };
 
   return (
     <div className="w-full h-full justify-center items-center overflow-y-scroll">
       <div className="w-full flex justify-center items-center py-10 max-sm:px-4 max-xs:px-3">
-        <div className="w-fit border py-8 max-sm:px-2  px-5 rounded-lg shadow bg-[#FBFBFB59]">
+        <div className="w-fit border py-8 max-sm:px-2 px-5 rounded-lg shadow bg-[#FBFBFB59]">
+          <div className="w-full flex justify-end px-4 mb-4">
+            <div>
+              <Select
+                    options={languageOptions}
+                styles={customStyles}
+                onChange={handleLanguageChange}
+                value={getCurrentLanguageOption()}
+                isSearchable={false}
+              />
+              
+            </div>
+          </div>
           <div className="w-full flex justify-center items-center flex-col mb-4">
             <img src={logo} className="mb-3" alt="logo" />
             <h4 className="font-poppins font-semibold text-3xl mb-3">
-              <span>Welcome to</span>
+              <span>{t('Welcome to')}</span>
               <span className="bg-text-gradient bg-clip-text text-transparent ml-1">
-                onboarding
+                {t('Onboarding')}
               </span>
             </h4>
             <p className="text-base text-center w-[80%] max-xs:w-[90%] text-gray-500">
-              We’re here to make your onboarding experience seamless, secure, and swift.
+              {t("We're here to make your onboarding experience seamless, secure, and swift.")}
             </p>
           </div>
           <div className="w-full p-4 flex text-start flex-col justify-center items-center">
             <p className="font-semibold text-gray-500 w-[90%]">
-              Kindly select what best describes you
+              {t('Kindly select what best describes you')}
             </p>
             <div className="w-full flex flex-col justify-center items-center mt-5">
-              {/* Radio Buttons */}
-              {["individual", "group", "sme"].map((label, index) => (
+              {["Individual", "Groups", "SME"].map((label, index) => (
                 <div
                   key={index}
                   className={`w-[90%] group transition-all duration-300 ease-in-out ${
@@ -50,14 +180,14 @@ function Welcome() {
                       : "bg-white border text-slate-600 border-[#8600D9EB]"
                   } rounded-lg p-2 flex text-start flex-row mb-8 items-center`}
                 >
-                  <p className="font-semibold">{label}</p>
+                  <p className="font-semibold">{t(label)}</p>
                   <div className="flex w-full justify-end p-3 rounded-lg">
                     <input
                       type="radio"
                       className="w-5 h-5 accent-[#8600D9EB]"
                       name="description"
                       id={`radio-${index}`}
-                      value={label}
+                      value={label.toLowerCase()}
                       checked={selectedOption === index}
                       onChange={() => handleRadioChange(index)}
                     />
@@ -66,11 +196,11 @@ function Welcome() {
               ))}
 
               <button
-               onClick={handleNextClick}
+                onClick={handleNextClick}
                 type="button"
                 className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 w-[50%] text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
               >
-                Next
+                {t('Next')}
                 <svg
                   width="24"
                   height="24"

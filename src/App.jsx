@@ -11,8 +11,16 @@ import UserDetails from './pages/dashboard/UserDetails';
 import AdminLogin from './pages/AdminLogin';
 import AuthLayout from './pages/authLayout';
 import Settings from './pages/dashboard/Settings';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
+
 function App() {
- 
+  const { t, i18n } = useTranslation();
+
+  useEffect(()=>{
+    i18n.changeLanguage(navigator.language); // Change language to English by default
+  
+  },[])
 
   return (
     <>

@@ -18,7 +18,7 @@ function DocumentScanning({ setTab }) {
   const [getStarted,setGetStarted] =useState(false);
   const [done,setDone]=useState(false)
   const [responseError,setRsponseError] = useState()
-
+  const [success,setSuccess]=useState(false)
   const idTypes = [
     { value: 'national_id', label: 'National ID Card', requiresBack: true },
     { value: 'passport', label: 'Passport', requiresBack: false },
@@ -185,8 +185,8 @@ const renderImageCapture = () => {
       setTimeout(() => {
         setFrontImage(null)
         setBackImage(null)
-        setTab("tab3"); // Navigate to the next tab or page
-      }, 1500);
+        setTab("tab4"); // Navigate to the next tab or page
+      }, 1500)
     } catch (error) {
       console.error('Document verification failed:', error);
       // Handle error appropriately

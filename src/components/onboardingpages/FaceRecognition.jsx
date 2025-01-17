@@ -1,18 +1,35 @@
-import { useEffect, useState ,useRef} from "react";
+import { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import Select from 'react-select';
 import face from "../../assets/img/svg/faceid.svg";
 import logo from "../../assets/img/svg/logo.svg";
 import { Camera } from 'lucide-react';
+import * as faceapi from 'face-api.js';
+
+// Importing required dependencies
+import { AzureKeyCredential } from '@azure/core-auth';
+import createFaceClient, {
+  isUnexpected,
+} from '@azure-rest/ai-vision-face';
+
+// Setting up
 
 
-const API_BASE_URL =  'https://onboarding-api.bdudcloud.com';
+const API_BASE_URL = 'https://onboarding-api.bdudcloud.com';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnaWdieXRlOTA3QGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsInVzZXJfaWQiOiI2MTM5NmE0MC1lMzA4LTRiYzYtOTFhOS0zOGViMDBiYjZjYjIiLCJleHAiOjE3MzY4MDc0MTksInR5cGUiOiJhY2Nlc3MiLCJqdGkiOiJqY2p3NndrVjNxeDlVSWpQb0R1NHBqaEJGbVpSMnFSaWlOWlpzNDVrUDFzIn0.i429ahrSCyC7KV7eZnlZXlTTlUj9Q1KENmRb7-Sa2pg'
+
+const endpoint = 'https://ai-engineers.cognitiveservices.azure.com/';
+const apikey = "SaksPOsEnXoYLWLqdLFFfoi37A6FfoTr3mH8GtlbAmuKu46gIu0pJQQJ99ALACYeBjFXJ3w3AAAKACOGWRdl";
+const credential = new AzureKeyCredential(apikey);
+const client = createFaceClient(endpoint, credential);
 
 function FaceRecognition({ setTab }) {
-
   const [sessionId, setSessionId] = useState(null);
+  const [authtoken, setAuthToken] = useState(null);
+
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
+  const [deviceId] = useState(crypto.randomUUID()); // Generate once when component mounts
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const checkInterval = useRef(null);
@@ -24,8 +41,6 @@ function FaceRecognition({ setTab }) {
       elements[i].style.display = "none";
     }
   }, []);
-
-
 
   const countryOptions = [
     {
@@ -49,7 +64,7 @@ function FaceRecognition({ setTab }) {
           French
           <img
             src="https://flagcdn.com/w40/fr.png"
-            alt="Ghana"
+            alt="French"
             className="rounded-full"
             style={{ width: 17, height: 17, marginLeft: 10 }}
           />
@@ -95,12 +110,10 @@ function FaceRecognition({ setTab }) {
     }),
   };
 
-
-
   const initializeCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' }
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -115,12 +128,16 @@ function FaceRecognition({ setTab }) {
   const createSession = async () => {
     try {
       setStatus('starting');
-      const response = await fetch(`${API_BASE_URL}/onboarding/live-check-session`, {
+      
+      const url = new URL(`${API_BASE_URL}/onboarding/live-check-session`);
+      url.searchParams.append('device_id', deviceId);
+      url.searchParams.append('live_mode', 'Passive');
+
+      const response = await fetch(url.toString(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJ1c2VyX2lkIjoiNGQ3ODJlMGItMzY5MS00ZTc2LTk4NjgtYzljN2Q1M2I3NzBjIiwiZXhwIjoxNzM2NDY2NzUxLCJ0eXBlIjoiYWNjZXNzIiwianRpIjoiSEtwd3BrdUdXcXF3a1FaQ0o3Q1hmT18xTmwxdGhFVnpDdEVyS0F2MmgzTSJ9.nuu1eo9x9k_3YRpBQfCjTTkWWd8udEN-9BunX3lzrEc`,
-
+          'Authorization': `Bearer ${AUTH_TOKEN}`,
         }
       });
       
@@ -130,7 +147,9 @@ function FaceRecognition({ setTab }) {
       }
       
       const data = await response.json();
+      console.log("connected",data)
       setSessionId(data.sessionId);
+      setAuthToken(data.authToken)
       await initializeCamera();
       setStatus('ready');
       
@@ -147,9 +166,9 @@ function FaceRecognition({ setTab }) {
     checkInterval.current = setInterval(async () => {
       try {
         const result = await checkLivenessResult(sid);
-        if (result.status === 'completed') {
+        if (result.status === 'Completed') {
           clearInterval(checkInterval.current);
-          setStatus(result.isLive ? 'success' : 'failed');
+          setStatus(result.result?.liveness_decision === 'realface' ? 'success' : 'failed');
         }
       } catch (err) {
         clearInterval(checkInterval.current);
@@ -164,7 +183,7 @@ function FaceRecognition({ setTab }) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJ1c2VyX2lkIjoiNGQ3ODJlMGItMzY5MS00ZTc2LTk4NjgtYzljN2Q1M2I3NzBjIiwiZXhwIjoxNzM2NDY2NzUxLCJ0eXBlIjoiYWNjZXNzIiwianRpIjoiSEtwd3BrdUdXcXF3a1FaQ0o3Q1hmT18xTmwxdGhFVnpDdEVyS0F2MmgzTSJ9.nuu1eo9x9k_3YRpBQfCjTTkWWd8udEN-9BunX3lzrEc`,
+        'Authorization': `Bearer ${AUTH_TOKEN}`,
       }
     });
 
@@ -176,37 +195,55 @@ function FaceRecognition({ setTab }) {
   };
 
   const performLivenessCheck = async () => {
-    try {
-      setStatus('checking');
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoRef.current, 0, 0);
-      
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
-      const formData = new FormData();
-      formData.append('image', blob);
+  try {
+    setStatus("checking");
 
-      // Send the image to your backend endpoint
-      // Note: Your backend should handle sending this to Azure
-      const response = await fetch(`${API_BASE_URL}/onboarding/live-check-session/${sessionId}/image`, {
-        method: 'POST',
-        body: formData,
+    // Capture image from video stream
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(videoRef.current, 0, 0);
+
+    // Convert canvas to a blob
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.95)
+    );
+
+    // Convert blob to binary data (Uint8Array)
+    const arrayBuffer = await blob.arrayBuffer();
+    const binaryData = new Uint8Array(arrayBuffer);
+
+    console.log("Captured Binary Data: ", binaryData);
+
+    // Submit captured binary data to Azure's Face Liveness API
+    const livenessCheckResponse = await client
+      .path(`/detectLiveness/singleModal/sessions/${sessionId}/media`)
+      .post({
+        headers: {
+          "Content-Type": "application/octet-stream",
+        },
+        body: binaryData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit image');
-      }
-
-      // Result will be obtained through polling
-    } catch (err) {
-      setError('Failed to perform liveness check');
-      setStatus('error');
-      console.error(err);
+    // Check if the request was successful
+    if (isUnexpected(livenessCheckResponse)) {
+      console.log(livenessCheckResponse)
+      throw new Error(livenessCheckResponse.body.error.message);
     }
-  };
+
+    // Handle a successful response
+    console.log("Azure Liveness Response: ", livenessCheckResponse.body);
+    setStatus("success");
+    return livenessCheckResponse.body;
+
+  } catch (err) {
+    setStatus("error");
+    setError("Failed to perform liveness check");
+    console.error("Liveness Check Error: ", err);
+    throw err;
+  }
+};
 
   const cleanup = async () => {
     if (streamRef.current) {
@@ -219,6 +256,9 @@ function FaceRecognition({ setTab }) {
       try {
         await fetch(`${API_BASE_URL}/onboarding/live-check-session/${sessionId}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+          },
         });
       } catch (err) {
         console.error('Failed to delete session:', err);
@@ -236,7 +276,6 @@ function FaceRecognition({ setTab }) {
     setError(null);
     setSessionId(null);
   };
-
 
   return (
     <div className="w-full h-full justify-center items-center overflow-y-scroll">
@@ -272,98 +311,81 @@ function FaceRecognition({ setTab }) {
                 Verify Your Identity with Onboard
               </div>
               <div className="text-slate-600 w-full">
-                Scan your face within to your Identity.
+                Scan your face within to verify your Identity.
               </div>
-              
-              
             </div>
 
-
-            <button
-              type="button"
-              className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
-            >
-            Get Sarted
-            </button>
-
-
-
+            {status === 'idle' && (
+              <button
+                onClick={createSession}
+                className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
+              >
+                Get Started
+              </button>
+            )}
           </div>
 
-
-    
           <div className="w-full max-w-md mx-auto p-4">
-      <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4 shadow-lg">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover"
-        />
-        {status === 'idle' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
-            <Camera className="w-12 h-12 text-gray-400" />
+            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4 shadow-lg">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              {status === 'idle' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
+                  <Camera className="w-12 h-12 text-gray-400" />
+                </div>
+              )}
+              {status === 'checking' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {status === 'ready' && (
+                <button
+                  onClick={performLivenessCheck}
+                  className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors"
+                >
+                  Perform Check
+                </button>
+              )}
+
+              {status === 'success' && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                  Liveness check passed successfully!
+                </div>
+              )}
+              
+              {status === 'failed' && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  Liveness check failed. Please try again.
+                </div>
+              )}
+
+              {(status === 'success' || status === 'failed' || status === 'error') && (
+                <button
+                  onClick={resetCheck}
+                  className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
+                >
+                  Try Again
+                </button>
+              )}
+            </div>
           </div>
-        )}
-        {status === 'checking' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        )}
-      </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {status === 'idle' && (
-          <button
-            onClick={createSession}
-            className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
-          >
-            Start Liveness Check
-          </button>
-        )}
-        
-        {status === 'ready' && (
-          <button
-            onClick={performLivenessCheck}
-            className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors"
-          >
-            Perform Check
-          </button>
-        )}
-
-        {status === 'success' && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-            Liveness check passed successfully!
-          </div>
-        )}
-        
-        {status === 'failed' && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            Liveness check failed. Please try again.
-          </div>
-        )}
-
-        {(status === 'success' || status === 'failed' || status === 'error') && (
-          <button
-            onClick={resetCheck}
-            className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
-          >
-            Try Again
-          </button>
-        )}
-      </div>
-    </div>
-
         </div>
       </div>
-
     </div>
   );
 }

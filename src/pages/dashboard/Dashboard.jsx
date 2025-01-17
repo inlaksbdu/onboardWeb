@@ -3,7 +3,7 @@ import Table from '../../components/dashboard/Table';
 import OnboardedCustomersChat from '../../components/charts/OnboardedCustomersChat';
 import AgeGenderChart from '../../components/charts/AgeGenderChart';
 import DemographyChart from '../../components/charts/DemographyCharts';
-import { useGetCustomersMutation} from '../../features/admin/adminSlice';
+import { useGetCustomersMutation,useGetMetricsMutation} from '../../features/admin/adminSlice';
 import { useEffect ,useState} from 'react';
 import Skeleton ,{ SkeletonTheme}from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -11,7 +11,8 @@ function Dashboard() {
 
 
   const [getCustomers, { isLoading }] = useGetCustomersMutation();
-  const [totalCustomers, setTotalCustomers] = useState();
+  const [getMetrics, { isLoading:isLoadingMetrics }] = useGetMetricsMutation();
+  const [metrics, setMetrics] = useState();
   const [onboardedCustomers, setOnboardedCustomers] = useState();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -35,6 +36,21 @@ function Dashboard() {
       console.log(e);
     }
   };
+
+
+  const handlegetMetrics=async()=>{
+    try {
+      const response = await getMetrics().unwrap();
+      console.log(response);
+      setMetrics(response);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  useEffect(() => {
+    handlegetMetrics();
+  }, []);
 
   useEffect(() => {
     handleGetCustomer(currentPage, filters);
@@ -60,10 +76,10 @@ function Dashboard() {
         />
       </svg>
     ),
-    number: totalCustomers && totalCustomers,
-    percentage: '12%',
+    number: metrics&&metrics?.total_customers ||0,
+    percentage: `${metrics&&metrics?.total_customers_change ||0}%`,
     time: 'from Last month',
-    action: 'increase', // Action as string ("increase" or "decrease")
+    action: ` ${metrics && metrics?.total_customers_change > 0 ? "increase" : metrics?.total_customers_change < 0 ? "decrease" : "stable"}`, // Action as string ("increase" or "decrease")
   },
   {
     title: 'Pending Verifications',
@@ -75,10 +91,10 @@ function Dashboard() {
 
 
     ),
-    number: 80,
-    percentage: '12%',
+    number: metrics&&metrics?.total_pending ||0,
+    percentage: `${metrics&&metrics?.total_pending_change ||0}%`,
     time: 'from Last month',
-    action: 'decrease', // Action as string
+    action:` ${metrics && metrics?.total_pending_change > 0 ? "increase" : metrics?.total_pending_change < 0 ? "decrease" : "stable"}`, // Action as string
   },
   {
     title: 'Success rate(liveness check)',
@@ -88,10 +104,10 @@ function Dashboard() {
 </svg>
 
     ),
-    number: '80%',
-    percentage: '12%',
+    number:`${metrics&&metrics?.success_rate ||0}%`,
+    percentage: `${metrics&&metrics?.success_rate_change ||0}%`,
     time: 'from Last month',
-    action: 'increase', // Action as string
+    action:` ${metrics && metrics?.success_rate_change > 0 ? "increase" : metrics?.success_rate_change < 0 ? "decrease" : "stable"}`, // Action as string
   },
   {
     title: 'Error Rate(OCR)',
@@ -101,10 +117,10 @@ function Dashboard() {
 </svg>
 
     ),
-    number: '75%',
-    percentage: '12%',
+    number: `${metrics&&metrics?.error_rate ||0}%`,
+    percentage: `${metrics&&metrics?.error_rate_change ||0}%`,
     time: 'from Last month',
-    action: 'decrease', // Action as string
+    action:` ${metrics && metrics?.error_rate_change > 0 ? "increase" : metrics?.error_rate_change < 0 ? "decrease" : "stable"}`,// Action as string
   },
 ];
 
@@ -118,7 +134,7 @@ function Dashboard() {
     <div className='w-full mb-7   grid md:grid-cols-3 gap-y-5 xs:grid-cols-2  xl:grid-cols-4 gap-x-5 '>
     {cards.map((card, index) => (
       
-        isLoading?
+      isLoadingMetrics?
         
         <SkeletonTheme key={index} baseColor="#a118f508" highlightColor="#ffff">
   

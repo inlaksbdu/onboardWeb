@@ -1,6 +1,8 @@
 // apiSlice.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setCredentials, logOut } from "../../features/auth/authSlice";
+import { encryptToken, decryptToken } from "../../features/auth/cryptoUtils";
+
 
 const baseQuery = fetchBaseQuery({
     baseUrl: '/api',
@@ -18,7 +20,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
     if (result?.error?.status === 401) {
-        const refreshToken = localStorage.getItem('refresh');
+        const refreshToken =  localStorage.getItem("refresh")? decryptToken(localStorage.getItem("refresh")):null;
         if (!refreshToken) {
             api.dispatch(logOut());
             return result;
@@ -28,7 +30,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
             const refreshResult = await baseQuery({
                 url: '/auth/refresh/',
                 method: 'POST',
-                body: { refresh: refreshToken }
+                body: { refresh_token: refreshToken }
             }, api, extraOptions);
 
             if (refreshResult?.data?.access) {
