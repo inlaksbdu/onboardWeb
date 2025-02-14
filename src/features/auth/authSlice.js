@@ -4,20 +4,16 @@ import { encryptToken, decryptToken } from "./cryptoUtils";
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    access: localStorage.getItem("access")
-      ? decryptToken(localStorage.getItem("access"))
-      : null,
-    refresh: localStorage.getItem("refresh")
-      ? decryptToken(localStorage.getItem("refresh"))
-      :null,
+    access: localStorage.getItem("access")|| null,
+    refresh: localStorage.getItem("refresh")||null,
   },
   reducers: {
     setCredentials: (state, action) => {
       const { access, refresh } = action.payload;
 
       // Encrypt tokens before storing
-      localStorage.setItem("access", encryptToken(access));
-      localStorage.setItem("refresh", encryptToken(refresh));
+      localStorage.setItem("access", access);
+      localStorage.setItem("refresh", refresh);
 
       state.access = access;
       state.refresh = refresh;

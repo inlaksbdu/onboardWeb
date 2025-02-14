@@ -212,7 +212,7 @@ console.log(sendoptreponse)
         account_type: localStorage.getItem("selectedOption") || ""
       })
       setTab("tab1.2"); // Navigate to the next tab or page
-    }, 1500);
+    }, 500);
    }catch(e){
     console.log(e)
     if (e.data.detail.length <150){

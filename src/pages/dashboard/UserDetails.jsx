@@ -71,7 +71,7 @@ function UserDetails() {
         <div className="w-[60%] h-fit bg-white border border-slate-200 rounded-md p-4">
           <div className='flex flex-col w-full text-start border-b border-slate-400 pb-5 border-dashed'>
             <h6 className='text-2xl font-bold text-slate-800'>
-              {isLoading ? <LoadingSkeleton width={200} height={28} /> : userDetails?.IdCardData?.full_name}
+              {isLoading ? <LoadingSkeleton width={200} height={28} /> : userDetails?.IdCard?.first_name}
             </h6>
             <span className='text-sm text-slate-600'>
               {isLoading ? <LoadingSkeleton width={150} /> : `Onboarded ${getTimeSinceOnboarding(userDetails?.User?.created_at)}`}
@@ -110,21 +110,21 @@ function UserDetails() {
             <div className='flex flex-row justify-between w-full mb-1'>
               <span className='font-medium text-slate-800'>First Name</span>
               <span className='text-slate-600 text-base'>
-                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCardData?.full_name?.split(' ')[0]}
+                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCard?.first_name}
               </span>
             </div>
 
             <div className='flex flex-row justify-between w-full mb-1'>
               <span className='font-medium text-slate-800'>Last Name</span>
               <span className='text-slate-600 text-base'>
-                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCardData?.full_name?.split(' ').slice(1).join(' ')}
+                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCard?.last_name}
               </span>
             </div>
 
             <div className='flex flex-row justify-between w-full mb-1'>
               <span className='font-medium text-slate-800'>Date of Birth</span>
               <span className='text-slate-600 text-base'>
-                {isLoading ? <LoadingSkeleton /> : formatDate(userDetails?.IdCardData?.date_of_birth)}
+                {isLoading ? <LoadingSkeleton /> : formatDate(userDetails?.IdCard?.date_of_birth)}
               </span>
             </div>
 
@@ -145,21 +145,21 @@ function UserDetails() {
             <div className='flex flex-row justify-between w-full mb-1'>
               <span className='font-medium text-slate-800'>Address:</span>
               <span className='text-slate-600 text-base'>
-                {isLoading ? <LoadingSkeleton /> : `${userDetails?.IdCardData?.street || ''}, ${userDetails?.IdCardData?.city || ''}`}
+                {isLoading ? <LoadingSkeleton /> : `${userDetails?.IdCard?.street || ''}, ${userDetails?.IdCard?.city || ''}`}
               </span>
             </div>
 
             <div className='flex flex-row justify-between w-full mb-1'>
               <span className='font-medium text-slate-800'>Nationality:</span>
               <span className='text-slate-600 text-base'>
-                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCardData?.nationality}
+                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCard?.nationality}
               </span>
             </div>
 
             <div className='flex flex-row justify-between w-full mb-1'>
               <span className='font-medium text-slate-800'>Gender</span>
               <span className='text-slate-600 text-base'>
-                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCardData?.gender === 'M' ? 'Male' : 'Female'}
+                {isLoading ? <LoadingSkeleton /> : userDetails?.IdCard?.gender === 'M' ? 'Male' : 'Female'}
               </span>
             </div>
           </div>
@@ -173,14 +173,14 @@ function UserDetails() {
           <div className='flex flex-row justify-between w-full mb-1'>
             <span className='font-medium text-slate-800'>Document type:</span>
             <span className='text-slate-600 text-base'>
-              {isLoading ? <LoadingSkeleton /> : userDetails?.IdCardData?.document_type}
+              {isLoading ? <LoadingSkeleton /> : userDetails?.IdCard?.document_type}
             </span>
           </div>
 
           <div className='flex flex-row justify-between w-full mb-1'>
             <span className='font-medium text-slate-800'>ID card issue date:</span>
             <span className='text-slate-600 text-base'>
-              {isLoading ? <LoadingSkeleton /> : formatDate(userDetails?.IdCardData?.date_of_issue)}
+              {isLoading ? <LoadingSkeleton /> : formatDate(userDetails?.IdCard?.date_of_issue)}
             </span>
           </div>
 
@@ -189,7 +189,7 @@ function UserDetails() {
             <span className='text-slate-600 text-base flex flex-row justify-center items-center'>
               {isLoading ? <LoadingSkeleton /> : (
                 <>
-                  {formatDate(userDetails?.IdCardData?.date_of_expiry)}
+                  {formatDate(userDetails?.IdCard?.date_of_expiry)}
                   {/*<FontAwesomeIcon icon={faInfoCircle} className='text-red-400 text-xs ml-2' />*/}
                   
                 </>
@@ -200,7 +200,7 @@ function UserDetails() {
           <div className='flex flex-row justify-between w-full mb-1'>
             <span className='font-medium text-slate-800'>Place of birth</span>
             <span className='text-slate-600 text-base'>
-              {isLoading ? <LoadingSkeleton /> : `${userDetails?.IdCardData?.city||""}, ${userDetails?.IdCardData?.country||""}`}
+              {isLoading ? <LoadingSkeleton /> : `${userDetails?.IdCard?.city||""}, ${userDetails?.IdCard?.country||""}`}
             </span>
           </div>
         </div>

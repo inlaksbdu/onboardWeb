@@ -4,35 +4,20 @@ import Select from 'react-select';
 import face from "../../assets/img/svg/faceid.svg";
 import logo from "../../assets/img/svg/logo.svg";
 import { Camera } from 'lucide-react';
-import * as faceapi from 'face-api.js';
-
-// Importing required dependencies
-import { AzureKeyCredential } from '@azure/core-auth';
-import createFaceClient, {
-  isUnexpected,
-} from '@azure-rest/ai-vision-face';
-
-// Setting up
+import { useOCRMutation } from "../../features/onboarding/OnboadingApiSlice";
 
 
-const API_BASE_URL = 'https://onboarding-api.bdudcloud.com';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnaWdieXRlOTA3QGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsInVzZXJfaWQiOiI2MTM5NmE0MC1lMzA4LTRiYzYtOTFhOS0zOGViMDBiYjZjYjIiLCJleHAiOjE3MzY4MDc0MTksInR5cGUiOiJhY2Nlc3MiLCJqdGkiOiJqY2p3NndrVjNxeDlVSWpQb0R1NHBqaEJGbVpSMnFSaWlOWlpzNDVrUDFzIn0.i429ahrSCyC7KV7eZnlZXlTTlUj9Q1KENmRb7-Sa2pg'
-
-const endpoint = 'https://ai-engineers.cognitiveservices.azure.com/';
-const apikey = "SaksPOsEnXoYLWLqdLFFfoi37A6FfoTr3mH8GtlbAmuKu46gIu0pJQQJ99ALACYeBjFXJ3w3AAAKACOGWRdl";
-const credential = new AzureKeyCredential(apikey);
-const client = createFaceClient(endpoint, credential);
 
 function FaceRecognition({ setTab }) {
-  const [sessionId, setSessionId] = useState(null);
-  const [authtoken, setAuthToken] = useState(null);
-
-  const [status, setStatus] = useState('idle');
+  const [image, setImage] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [error, setError] = useState(null);
-  const [deviceId] = useState(crypto.randomUUID()); // Generate once when component mounts
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const checkInterval = useRef(null);
+  const [sendOCR,{isLoading}] = useOCRMutation()
+  const [done, setDone] = useState(false)
+  const [selfies, setSelfies] = useState(null)
+  const [responseError,setRsponseError] = useState()
 
   useEffect(() => {
     // Remove separator from react-select
@@ -125,156 +110,124 @@ function FaceRecognition({ setTab }) {
     }
   };
 
-  const createSession = async () => {
-    try {
-      setStatus('starting');
-      
-      const url = new URL(`${API_BASE_URL}/onboarding/live-check-session`);
-      url.searchParams.append('device_id', deviceId);
-      url.searchParams.append('live_mode', 'Passive');
-
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${AUTH_TOKEN}`,
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create session');
-      }
-      
-      const data = await response.json();
-      console.log("connected",data)
-      setSessionId(data.sessionId);
-      setAuthToken(data.authToken)
-      await initializeCamera();
-      setStatus('ready');
-      
-      // Start polling for results once session is created
-      startPolling(data.sessionId);
-    } catch (err) {
-      setError(err.message);
-      setStatus('error');
-      console.error(err);
-    }
-  };
-
-  const startPolling = (sid) => {
-    checkInterval.current = setInterval(async () => {
-      try {
-        const result = await checkLivenessResult(sid);
-        if (result.status === 'Completed') {
-          clearInterval(checkInterval.current);
-          setStatus(result.result?.liveness_decision === 'realface' ? 'success' : 'failed');
-        }
-      } catch (err) {
-        clearInterval(checkInterval.current);
-        setError('Failed to get liveness result');
-        setStatus('error');
-      }
-    }, 2000); // Poll every 2 seconds
-  };
-
-  const checkLivenessResult = async (sid) => {
-    const response = await fetch(`${API_BASE_URL}/onboarding/live-check-result/${sid}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AUTH_TOKEN}`,
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to get liveness result');
-    }
-
-    return await response.json();
-  };
-
-  const performLivenessCheck = async () => {
-  try {
-    setStatus("checking");
-
-    // Capture image from video stream
-    const canvas = document.createElement("canvas");
+  const captureImage = () => {
+    const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(videoRef.current, 0, 0);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    // Convert canvas to a blob
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.95)
-    );
+    const imageData = canvas.toDataURL('image/png');
+    setImage(imageData);
+    setShowCamera(false);
+    cleanup();
+  };
 
-    // Convert blob to binary data (Uint8Array)
-    const arrayBuffer = await blob.arrayBuffer();
-    const binaryData = new Uint8Array(arrayBuffer);
-
-    console.log("Captured Binary Data: ", binaryData);
-
-    // Submit captured binary data to Azure's Face Liveness API
-    const livenessCheckResponse = await client
-      .path(`/detectLiveness/singleModal/sessions/${sessionId}/media`)
-      .post({
-        headers: {
-          "Content-Type": "application/octet-stream",
-        },
-        body: binaryData,
-      });
-
-    // Check if the request was successful
-    if (isUnexpected(livenessCheckResponse)) {
-      console.log(livenessCheckResponse)
-      throw new Error(livenessCheckResponse.body.error.message);
-    }
-
-    // Handle a successful response
-    console.log("Azure Liveness Response: ", livenessCheckResponse.body);
-    setStatus("success");
-    return livenessCheckResponse.body;
-
-  } catch (err) {
-    setStatus("error");
-    setError("Failed to perform liveness check");
-    console.error("Liveness Check Error: ", err);
-    throw err;
-  }
-};
-
-  const cleanup = async () => {
+  const cleanup = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
-    if (checkInterval.current) {
-      clearInterval(checkInterval.current);
-    }
-    if (sessionId) {
-      try {
-        await fetch(`${API_BASE_URL}/onboarding/live-check-session/${sessionId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${AUTH_TOKEN}`,
-          },
-        });
-      } catch (err) {
-        console.error('Failed to delete session:', err);
-      }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    setSelfies(file)
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  useEffect(() => {
-    return () => cleanup();
-  }, []);
 
-  const resetCheck = async () => {
-    await cleanup();
-    setStatus('idle');
-    setError(null);
-    setSessionId(null);
+  const handleSubmit = async () => {
+    try {
+      const formData = new FormData();
+  
+      // Function to convert base64 to File object
+      const base64ToFile = async (base64String, fileName) => {
+        // Get the base64 data part
+        const base64Data = base64String.split(',')[1];
+        // Convert base64 to blob
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/png' });
+        
+        return new File([blob], fileName, { type: 'image/png' });
+      };
+  
+      // Add front image
+     
+      
+      const frontImage = await  base64ToFile(localStorage.getItem('front'),'front.png');
+      formData.append('image_front',frontImage);
+
+      if (localStorage.getItem("back")){
+
+       
+        const backdata= await base64ToFile(localStorage.getItem("back"),'back.png')
+        formData.append("image_back",backdata)
+      }
+ 
+      console.log(image)
+      if (image) {
+        const selfie= await base64ToFile(image, 'selfie.png');
+        console.log(selfie)
+        formData.append('selfie', selfie);
+      }
+    
+      // Send the request
+   const response = await sendOCR(formData).unwrap();
+      
+      console.log(response)
+      setDone(true);
+      setTimeout(() => {
+       
+        setTab("tab4"); // Navigate to the next tab or page
+      }, 1500)
+    } catch (error) {
+      console.error('Document verification failed:', error);
+      // Handle error appropriately
+      if (error.status === 415) {
+        setRsponseError({
+          detail:"Invalid file type. Please upload only image files."
+        })
+      } else if (error.status === 400) {
+        if (error.reasons){
+          setRsponseError({
+            detail: `Document verification failed. Please try again.${error.reason[0].description}`
+            
+          })
+        }
+        else{
+        setRsponseError({
+          detail:"Document verification failed. Please try again."
+        })
+      }
+      } 
+      else if (error.status === 500) {
+        error?.data?.detail==="Error: 400: ID card already exists"?
+        setRsponseError({
+          detail:"Id Card Already Exist"
+        })
+      
+        :
+        setRsponseError({
+          detail:"Please provide a valid id,Try again!"
+        })
+      }
+       else {
+        alert('An error occurred. Please try again.');
+      }
+    }
   };
 
   return (
@@ -307,6 +260,27 @@ function FaceRecognition({ setTab }) {
 
           <div className="w-full flex flex-col justify-center items-center">
             <div className="w-[90%] flex flex-col text-center justify-center items-center">
+            {
+          responseError?
+          <div className="w-full my-3">
+         <div id="alert-border-2" className="flex items-center p-4 mb-4 text-red-800 border-t-4 border-red-300 bg-red-50 " role="alert">
+    <svg className="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+    </svg>
+    <div className="ms-3 text-sm font-medium">
+            {responseError.detail}
+    </div>
+    <button type="button" onClick={()=>setRsponseError()} className="ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 "  data-dismiss-target="#alert-border-2" aria-label="Close">
+      <span className="sr-only">Dismiss</span>
+      <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+      </svg>
+    </button>
+</div>
+         </div> 
+          :""
+         }
+           
               <div className="text-slate-900 font-semibold w-full">
                 Verify Your Identity with Onboard
               </div>
@@ -315,74 +289,86 @@ function FaceRecognition({ setTab }) {
               </div>
             </div>
 
-            {status === 'idle' && (
-              <button
-                onClick={createSession}
-                className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
-              >
-                Get Started
-              </button>
-            )}
-          </div>
-
-          <div className="w-full max-w-md mx-auto p-4">
-            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4 shadow-lg">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-              {status === 'idle' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
-                  <Camera className="w-12 h-12 text-gray-400" />
-                </div>
-              )}
-              {status === 'checking' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
-              )}
-            </div>
-
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                {error}
+            {!image && (
+              <div className="w-full flex flex-col items-center gap-2 mt-6">
+                <div className="text-sm font-medium text-gray-700">Instructions:</div>
+                <ul className="text-sm text-gray-600 list-disc list-inside">
+                  <li>Ensure good lighting.</li>
+                  <li>Face the camera directly.</li>
+                  <li>Remove any accessories that obscure your face.</li>
+                  <li>Use a plain background.</li>
+                </ul>
               </div>
             )}
 
-            <div className="space-y-4">
-              {status === 'ready' && (
-                <button
-                  onClick={performLivenessCheck}
-                  className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors"
-                >
-                  Perform Check
-                </button>
-              )}
-
-              {status === 'success' && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                  Liveness check passed successfully!
+            {showCamera ? (
+              <div className="w-full max-w-md mx-auto p-4">
+                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4 shadow-lg">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              )}
-              
-              {status === 'failed' && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                  Liveness check failed. Please try again.
-                </div>
-              )}
-
-              {(status === 'success' || status === 'failed' || status === 'error') && (
                 <button
-                  onClick={resetCheck}
-                  className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
+                  onClick={captureImage}
+                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
                 >
-                  Try Again
+                  Capture Image
                 </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              !image && (
+                <button
+                  onClick={() => {
+                    setShowCamera(true);
+                    initializeCamera();
+                  }}
+                  className="bg-gradient-to-r mt-6 from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
+                >
+                  Start Camera
+                </button>
+              )
+            )}
+
+            {image && (
+              <div className="w-full flex flex-col items-center gap-2 mt-6">
+                <div className="text-sm font-medium text-gray-700">Captured Image:</div>
+                <div className="relative w-64 h-40">
+                  <img src={image} alt="Captured" className="w-full h-full object-cover rounded-lg" />
+                  <button
+                    onClick={() => setImage(null)}
+                    className="absolute top-2 right-2 bg-red-500 text-white py-1 px-[0.4rem] rounded-full text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <button
+                  onClick={handleSubmit}
+                  className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] w-[90%] inline-flex items-center text-white rounded-lg text-sm px-5 py-3 font-semibold text-center justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all"
+                >
+                  
+                  {
+          isLoading?
+          <><div className="spinner mr-4"></div> Verifying...</>
+          :done? 
+          (<> 
+                  <div className="wrapper mr-2"> <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+</svg>
+</div> Verified </> )
+          :"Continue"
+        }
+                </button>
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                {error}
+              </div>
+            )}
           </div>
         </div>
       </div>

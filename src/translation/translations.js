@@ -109,7 +109,7 @@ const translations = {
       "Welcome to Onboard": "Bienvenue à bord",
       "We're here to make your onboarding experience seamless, secure, and swift.": "Nous sommes là pour rendre votre expérience d'intégration transparente, sécurisée et rapide.",
       "Kindly select what best describes you": "Veuillez sélectionner ce qui vous décrit le mieux",
-      "Individual": "Individuel, Individuelle",
+      "Individual": "Individuel",
       "Groups": "Groupes",
       "SME": "PME",
       "Next": "Suivant",

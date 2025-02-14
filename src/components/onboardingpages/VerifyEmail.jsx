@@ -102,7 +102,7 @@ function VerifyEmail({setTab}) {
   
         })
         setTab("tab1.3"); // Navigate to the next tab or page
-      }, 1500);
+      }, 500);
     
      
    

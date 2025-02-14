@@ -167,25 +167,25 @@ const renderImageCapture = () => {
   
       // Add front image
       if (frontImage) {
+        localStorage.setItem('front', frontImage)
         const frontFile = await base64ToFile(frontImage, 'front.png');
-        formData.append('front', frontFile);
       }
   
       // Add back image if it exists
       if (backImage) {
+        localStorage.setItem('back', backImage)
         const backFile = await base64ToFile(backImage, 'back.png');
-        formData.append('back', backFile);
       }
   
       // Send the request
-      const response = await sendOCR(formData).unwrap();
+ //     const response = await sendOCR(formData).unwrap();
       
-      console.log(response)
+     
       setDone(true);
       setTimeout(() => {
         setFrontImage(null)
         setBackImage(null)
-        setTab("tab4"); // Navigate to the next tab or page
+        setTab("tab3"); // Navigate to the next tab or page
       }, 1500)
     } catch (error) {
       console.error('Document verification failed:', error);
@@ -333,12 +333,12 @@ const renderImageCapture = () => {
 
         {
           isLoading?
-          <><div className="spinner mr-4"></div> Verifying...</>
+          <><div className="spinner mr-4"></div> Continue</>
           :done? 
           (<> 
                   <div className="wrapper mr-2"> <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
 </svg>
-</div> Verified </> )
+</div>Continue </> )
           :"Continue"
         }
           

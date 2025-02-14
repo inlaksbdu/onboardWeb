@@ -13,6 +13,7 @@ import AuthLayout from './pages/authLayout';
 import Settings from './pages/dashboard/Settings';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
+import LandingPage from './components/onboardingpages/LandingPage';
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -37,6 +38,7 @@ function App() {
 
       <Route element={<AuthLayout />}>
 
+      <Route path="/customer-dashboard" element={ <LandingPage/>} />
 
       <Route path="/admin" element={ <Layout><Dashboard/></Layout>} />
       <Route path="/admin/customers" element={ <Layout><Customer/></Layout>} />

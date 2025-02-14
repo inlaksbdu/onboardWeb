@@ -31,6 +31,7 @@ const Table = () => {
         ...filters
       }).unwrap();
       
+      console.log(response)
       setTotalCustomers(response.total);
       setCustomers(response.customers);
       setTotalPages(Math.ceil(response.total / 10));

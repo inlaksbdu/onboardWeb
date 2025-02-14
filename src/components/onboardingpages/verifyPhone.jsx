@@ -172,7 +172,7 @@ function VerifyPhone({setTab}) {
           countryCode: "+233",
         })
         setTab("tab2"); // Navigate to the next tab or page
-      }, 1500);
+      }, 500);
      
       
      }catch(e){
