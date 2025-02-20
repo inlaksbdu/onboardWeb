@@ -8,7 +8,7 @@ export default defineConfig({
         port: 8025,       // Ensure Vite listens on 8025
         strictPort: true, // Prevent Vite from switching ports
         allowedHosts: [
-            "https://onboarding.bdudcloud.com/",
+            'https://onboarding.bdudcloud.com/',
             'https://onboarding-api.bdudcloud.com'
       ],
         proxy: {
