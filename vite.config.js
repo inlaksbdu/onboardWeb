@@ -4,11 +4,14 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
     plugins: [react()],
     server: {
-        port: 8025,       // Ensure Vite listens on 8025
-        allowedHosts: [
+        port: 8025,  
+        host: '0.0.0.0',  
+        port: 8025,        
+        strictPort: true,  
+
+        allowedHosts: 
             'onboarding.bdudcloud.com',
-            'onboarding-api.bdudcloud.com'
-      ],
+      
         proxy: {
             '/api': {
                 target: 'https://onboarding-api.bdudcloud.com',
