@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY package.json .
 
-RUN npm install
+RUN npm install  
 
 COPY . .
 
-EXPOSE  8080
+EXPOSE 8025  
 
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port 8025"]

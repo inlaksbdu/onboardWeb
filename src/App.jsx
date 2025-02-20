@@ -9,12 +9,11 @@ import Customer from './pages/dashboard/Customer';
 import SystemAnalytics from './pages/dashboard/SystemAnalytics';
 import UserDetails from './pages/dashboard/UserDetails';
 import AdminLogin from './pages/AdminLogin';
-import AuthLayout from './pages/authLayout';
 import Settings from './pages/dashboard/Settings';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import LandingPage from './components/onboardingpages/LandingPage';
-
+import AuthLayout from "./pages/AuthLayout"
 function App() {
 
 
