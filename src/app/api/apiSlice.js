@@ -19,7 +19,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
     if (result?.error?.status === 401) {
-        const refreshToken =  localStorage.getItem("refresh") ||null;
+        const refreshToken =  localStorage.getItem("refresh") ;
         if (!refreshToken) {
             api.dispatch(logOut());
             return result;
@@ -29,7 +29,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
             const refreshResult = await baseQuery({
                 url: '/auth/refresh/',
                 method: 'POST',
-                body: { refresh: refreshToken }
+                body: { refresh_token: refreshToken }
             }, api, extraOptions);
 
             if (refreshResult?.data?.access) {

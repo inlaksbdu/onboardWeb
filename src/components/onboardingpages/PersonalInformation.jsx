@@ -4,6 +4,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import Select ,{ components }from "react-select";
 import { useGetCardDataMutation } from '../../features/auth/authApiSlice';
 import { useNavigate } from 'react-router-dom';
+import { useCorfirmCardDataMutation } from '../../features/onboarding/OnboadingApiSlice';
+import { setdiff1dAsync } from '@tensorflow/tfjs-core';
+
 
 function PersonalInformation() {
   const [isFocused, setIsFocused] = useState(false);
@@ -15,6 +18,7 @@ function PersonalInformation() {
   const [idType, setIdType] =useState(null);
   const  [done,setDone]=useState(false)
   const navigate=useNavigate()
+  const [confirmCardData, { isLoading: confirmLoading }] = useCorfirmCardDataMutation();
 
   const [selectedOption, setSelectedOption] = useState(null);
   const [isNationalityFocused, setIsNationalityFocused] = useState(false);
@@ -45,15 +49,32 @@ function PersonalInformation() {
       });
 
       // Set date of birth
-      if (response.date_of_birth) {
-        setDate(new Date(response.date_of_birth.content));
-      }
+     
 
       if (response.date_of_expiry) {
+        console.log(new Date(response.date_of_issue.content))
+
         setEndDate(new Date(response.date_of_expiry.content));
       }
 
+      
+
+      if (response.date_of_birth) {
+        const dobString = response.date_of_birth.content; // '28/03/2021'
+        const [day, month, year] = dobString.split('/'); // Split into parts
+    
+        // Create a valid Date object (YYYY, MM-1, DD) - Note: Month is 0-based in JS
+        const dobDate = new Date(year, month - 1, day);
+    
+        console.log(dobDate); // Check the parsed date
+    
+        setDate(dobDate);
+    }
+    
+
+
       if (response.date_of_issue) {
+        console.log(new Date(response.date_of_issue.content))
         setIssuedDate(new Date(response.date_of_issue.content));
       }
 
@@ -144,13 +165,41 @@ function PersonalInformation() {
 
 
 
-  const handleDone=() => {
-    setDone(true)
-    setTimeout(() => {
-     navigate("/customer-dashboard")
-    
-    }, 1500);
-  }
+
+  const handleConfirm = async () => {
+    try {
+      const body = {
+        first_name: formData.firstName,
+        middle_name: formData.otherNames,
+        last_name: formData.lastName,
+        gender: gender,
+        date_of_birth: date ? date.toISOString().split('T')[0] : cardData.date_of_birth.content,
+        nationality: selectedOption ? selectedOption.value : cardData.nationality.content,
+        document_type: idType || cardData.document_type,
+        document_number: idNumber || cardData.document_number.content,
+        id_number: idNumber || cardData.id_number.content,
+        date_of_issue: issued_date ? issued_date.toISOString().split('T')[0] : cardData.date_of_issue.content,
+        date_of_expiry: end_date ? end_date.toISOString().split('T')[0] : cardData.date_of_expiry.content,
+        state: cardData.state.content,
+        country: selectedOption ? selectedOption.value : cardData.country.content,
+      };
+      console.log(body);
+
+      const response = await confirmCardData({
+        id: cardData.id,
+        body: body,
+      }).unwrap();
+
+      console.log(response);
+      setDone(true);
+      setTimeout(() => {
+        navigate("/customer-dashboard");
+      }, 1500);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <div className="w-full h-full justify-center items-center overflow-scroll">
       <div className="w-full flex justify-center items-center mt-11 pb-10 pt-3 max-sm:px-4 max-xs:px-3">
@@ -256,13 +305,14 @@ function PersonalInformation() {
 
                 <div className="relative w-full mb-5">
                   <DatePicker
-                    selected={date}
+                    selected={date&&date}
                     onChange={(newDate) => setDate(newDate)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     className="block rounded-md px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border appearance-none focus:outline-none focus:ring-0"
                     placeholderText=" "
-                    dateFormat="MM/dd/yyyy"
+
+                    dateFormat="dd/MM/yyyy"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -282,13 +332,13 @@ function PersonalInformation() {
 
                 <div className="relative w-full mb-5">
                   <DatePicker
-                    selected={issued_date}
+                    selected={issued_date &&issued_date}
                     onChange={(newDate) => setIssuedDate(newDate)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     className="block rounded-md px-2.5 pb-2.5 pt-2 w-full text-md text-slate-800 border-slate-200 border appearance-none focus:outline-none focus:ring-0"
                     placeholderText=" "
-                    dateFormat="MM/dd/yyyy"
+                    dateFormat="dd/MM/yyyy"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -298,7 +348,7 @@ function PersonalInformation() {
                     </svg>
                   </div>
                   <label className={`absolute text-sm text-slate-600 duration-300 transform ${
-                    isFocused || date ? "scale-75 -translate-y-5" : "scale-100 translate-y-0"
+                    isFocused || issued_date ? "scale-75 -translate-y-5" : "scale-100 translate-y-0"
                   } top-3 z-10 origin-[0] start-2.5 bg-white px-1 pointer-events-none`}>
                      Date of Issue
                   </label>
@@ -306,7 +356,7 @@ function PersonalInformation() {
 
                 <div className="relative w-full mb-5">
                   <DatePicker
-                    selected={end_date}
+                    selected={end_date&&end_date}
                     onChange={(newDate) => setEndDate(newDate)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
@@ -322,7 +372,7 @@ function PersonalInformation() {
                     </svg>
                   </div>
                   <label className={`absolute text-sm text-slate-600 duration-300 transform ${
-                    isFocused || date ? "scale-75 -translate-y-5" : "scale-100 translate-y-0"
+                    isFocused || end_date ? "scale-75 -translate-y-5" : "scale-100 translate-y-0"
                   } top-3 z-10 origin-[0] start-2.5 bg-white px-1 pointer-events-none`}>
                     Date of Expiry
                   </label>
@@ -405,7 +455,16 @@ function PersonalInformation() {
         }}
       />
     </div>
-    <button onClick={handleDone} to ='/customer-dashboard'  type="button"  className="bg-gradient-to-r mb-10  from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  w-full text-center mt-5  justify-center  duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all ">
+    {
+      confirmLoading?
+      <button onClick={handleConfirm} to ='/customer-dashboard'  type="button"  className="bg-gradient-to-r mb-10  from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  w-full text-center mt-5  justify-center  duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all ">
+<div className='spinner mx-4 '></div> Confirming...
+
+
+
+</button>
+      :
+      <button onClick={handleConfirm} to ='/customer-dashboard'  type="button"  className="bg-gradient-to-r mb-10  from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  w-full text-center mt-5  justify-center  duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all ">
     {
       done?
       <span className='flex flex-row items-center gap-2'>
@@ -422,6 +481,9 @@ function PersonalInformation() {
 
 
 </button>
+
+    }
+ 
 </form>
 
 </div>

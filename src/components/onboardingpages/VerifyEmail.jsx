@@ -20,12 +20,24 @@ function VerifyEmail({setTab}) {
     const [successdiv,setSuccess]=useState(false)
     const [tooshort,setTooShort]=useState()
     const [optsentsuccess,setOtpSentSucess]=useState()
+    const [timer, setTimer] = useState(60); // 60 seconds
     
   
     const [formData, setFormData] = useState({
       otp: "",
     
     });
+
+
+    useEffect(() => {
+      let interval;
+      if (timer > 0) {
+        interval = setInterval(() => {
+          setTimer((prevTimer) => prevTimer - 1);
+        }, 1000);
+      }
+      return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [timer]);
   
   
   
@@ -39,18 +51,16 @@ function VerifyEmail({setTab}) {
   
   
   
-    
-    const handleSendOtp =async()=>{
-        try{
-        const response =await sendOtp().unwrap();
-        console.log(response)
-        setOtpSentSucess(true)
-        }catch(error){
-          setRsponseError(error.message)
-        }
-  
+   const handleSendOtp = async () => {
+    try {
+      const response = await sendOtp().unwrap();
+      console.log(response);
+      setOtpSentSucess(true);
+      setTimer(60); // Reset the timer to 60 seconds
+    } catch (error) {
+      setRsponseError(error.message);
     }
-    
+  };
   
   
  
@@ -454,19 +464,22 @@ const countryOptions1 = [
            
             </Link>
 
-            <div className="w-full text-start mb-14 flex justify-center  items-start flex-col ">
-            {
-                isSendOtpLoading?
-
-                    <div className="dots mr-4 my-3 "> </div>
-
-                :
-                <span onClick={handleSendOtp} className="text-sm cursor-pointer  text-[#8600D9] underline "> resend otp</span>
-
-
-            }
-           
-            </div>
+         
+            <div className="w-full text-start mb-14 flex justify-center items-start flex-col">
+  {isSendOtpLoading ? (
+    <div className="dots mr-4 my-3"></div>
+  ) : (
+    <button
+      onClick={handleSendOtp}
+      disabled={timer > 0}
+      className={`text-sm cursor-pointer text-[#8600D9] underline ${
+        timer > 0 ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
+      {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
+    </button>
+  )}
+</div>
 
           </div>
 

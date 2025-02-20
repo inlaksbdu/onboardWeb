@@ -12,10 +12,30 @@ export const OnboardingApiSlice = apiSlice.injectEndpoints({
                 FormData:true
             })
         }),
+
+        getStage: builder.mutation({
+            query: () => ({
+                url: '/onboarding/stage',
+                method: 'GET',
+                
+            })
+        }),
+
+        corfirmCardData: builder.mutation({
+            query: ({id,body}) => ({
+                url: `/onboarding/confirm-id?id=${encodeURIComponent(id)}`,
+                method: 'PUT',
+                body: body,
+              
+               
+            })
+        }),
         
     })
 });
 
 export const {
     useOCRMutation,
+    useGetStageMutation,
+    useCorfirmCardDataMutation
 } = OnboardingApiSlice;

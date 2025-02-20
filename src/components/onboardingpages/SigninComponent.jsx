@@ -10,15 +10,19 @@ import { useRegisterMutation,useLoginMutation,useSendOTPMutation } from "../../f
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
 import { useTranslation } from 'react-i18next';
+import { useGetStageMutation } from "../../features/onboarding/OnboadingApiSlice";
 
 function SigninComponent({setTab}) {
   const [register,{isLoading}]=useRegisterMutation()
-  
-
+  const [login,{isLoading:isLoginLoading}]=useLoginMutation()
   const [sendOTP,{isLoadig:isSendingOTP}]=useSendOTPMutation()
+  const [getStage,{isLoading:isStageLoading}] = useGetStageMutation();
   const [isdone,setisDone]=useState(false )
   const [responseError,setRsponseError]=useState()
   const dispatch = useDispatch();
+  const [currentLanguage, setCurrentLanguage] = useState("en"); 
+  const [userLogin,setUserLogin]=useState(false);
+  const [tabToDirect,setTabToDirect]=useState()
 
   const [formData, setFormData] = useState({
     email: "",
@@ -214,12 +218,16 @@ console.log(sendoptreponse)
       setTab("tab1.2"); // Navigate to the next tab or page
     }, 500);
    }catch(e){
-    console.log(e)
-    if (e.data.detail.length <150){
+    console.log(e.data.detail)
+  
+if (e.status==500){
+    setRsponseError(e.data.detail);
 
-    
-    setRsponseError(e.data)
-    
+   }
+   else if (e.data.detail[0]){
+    setRsponseError(e.data.detail[0].msg);
+
+
    }
    else{
     setRsponseError("An error occured,Try again !")
@@ -236,6 +244,89 @@ console.log(sendoptreponse)
 
   
 
+  const handleSubmit2 = async (e) => {
+    e.preventDefault();
+  
+    // Validate all fields
+    console.log(formData);
+    const newErrors = {
+      email: validateEmail(formData.email) ? "" : "Please enter a valid email",
+      password: validatepasword2(formData.password) ? "" : "Please enter a valid password",
+    };
+  
+    setErrors(newErrors);
+  
+    // Check if there are any errors
+    if (!Object.values(newErrors).some(error => error)) {
+      try {
+        // Format the data as URL-encoded
+        const urlEncodedData = new URLSearchParams();
+        urlEncodedData.append("username", formData.email);
+        urlEncodedData.append("password", formData.password);
+        urlEncodedData.append("grant_type", "password");
+        urlEncodedData.append("scope", "");
+        urlEncodedData.append("client_id", "");
+        urlEncodedData.append("client_secret", "");
+  
+        // Call the login mutation with URL-encoded data
+        const response = await login({body:urlEncodedData}).unwrap();
+        console.log(response);
+  
+        if (response.access_token) {
+          dispatch(setCredentials({ access: response.access_token, refresh: response.refresh_token }));
+          setisDone(true);
+          // Handle successful login (e.g., redirect)
+        }
+  
+
+        const  stage=await getStage().unwrap();
+        console.log(stage)
+        
+
+
+        
+    
+  
+        setTimeout(() => {
+          setFormData({
+            email: "",
+            phone: "",
+            password: "",
+            countryCode: "+233",
+            account_type: localStorage.getItem("selectedOption") || "",
+          });
+
+          if (stage.stage=="phone_verification"){
+            setTab("tab2");
+          }
+          else if (stage.stage=="mail_verification"){
+        setTab("tab1.3");            
+          }
+          else if (stage.stage=="ocr"){
+            setTab("tab4");
+
+          }
+          else if(stage.stage=="signup"){
+            setTab("tab1.2");
+          }
+          else if(stage.stage=="id_confirmation"){
+            setTab("tab4");
+          }
+          
+
+        }, 300);
+      } catch (e) {
+        console.log(e);
+  
+        if (e.status === 401) {
+          setRsponseError(e.data.detail);
+       
+        } else {
+          setRsponseError("An error occurred. Try again!");
+        }
+      }
+    }
+  };
  
 
 
@@ -406,24 +497,44 @@ console.log(sendoptreponse)
 
   const { t, i18n } = useTranslation();
 
-  // Detect browser language on component mount
+
+  
   useEffect(() => {
-    const detectBrowserLanguage = () => {
-      const browserLang = navigator.language.split('-')[0]; // This gets 'en' from 'en-US'
+    const detectLanguage = () => {
+      // First check localStorage
+      const savedLanguage = localStorage.getItem('preferredLanguage');
       const supportedLanguages = ['en', 'fr', 'es'];
       
-      // Check if browser language is supported, otherwise default to 'en'
-      const defaultLang = supportedLanguages.includes(browserLang) ? browserLang : 'en';
-      
-      // Only change language if it's different from current
-      if (i18n.language !== defaultLang) {
-        i18n.changeLanguage(defaultLang);
+      if (savedLanguage && supportedLanguages.includes(savedLanguage)) {
+        return savedLanguage;
       }
+
+      // If no saved language, detect browser language
+      const browserLang = navigator.language.split('-')[0];
+      return supportedLanguages.includes(browserLang) ? browserLang : 'en';
     };
 
-    detectBrowserLanguage();
+    const defaultLang = detectLanguage();
+    if (i18n.language !== defaultLang) {
+      i18n.changeLanguage(defaultLang).then(() => {
+        setCurrentLanguage(defaultLang); // Update state after language change
+      });
+    } else {
+      setCurrentLanguage(defaultLang); // Set state if language is already correct
+    }
   }, [i18n]);
 
+  useEffect(() => {
+    const handleLanguageChange = (lang) => {
+      setCurrentLanguage(lang);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const languageOptions = [
     {
@@ -470,12 +581,29 @@ console.log(sendoptreponse)
     }
   ];
 
+
+
   const handleLanguageChange = (selectedOption) => {
-    i18n.changeLanguage(selectedOption.value);
+    i18n.changeLanguage(selectedOption.value).then(() => {
+      localStorage.setItem('preferredLanguage', selectedOption.value);
+    });
   };
+
   const getCurrentLanguageOption = () => {
-    return languageOptions.find(option => option.value === i18n.language) || languageOptions[0];
+    return languageOptions.find(option => option.value === currentLanguage) || languageOptions[0];
   };
+
+
+  const handleUserLogin=()=>{
+    setUserLogin(true);
+    setRsponseError()
+  }
+
+  const handleUserLogi2n=()=>{
+    setUserLogin(false);
+    setRsponseError()
+  }
+
 
   return (
     <div className="w-full h-full justify-center items-center overflow-scroll">
@@ -494,9 +622,25 @@ console.log(sendoptreponse)
             </div> </div>
           <div className="w-full flex justify-center items-center flex-col mb-4">
             <img src={logo} className="mb-2" alt="logo" />
-            <h4 className="font-poppins font-semibold text-xl mb-1">
-             { t('Sign in to Onboard')}
+            {
+              userLogin?
+              <>
+              <h4 className="font-poppins font-semibold text-xl mb-1">
+             { t('Sign in to continue ')}
             </h4>
+            <p className="text-sm text-gray-400">Carefully Provide your Credentials </p>
+            </>
+              :
+              <>
+
+              <h4 className="font-poppins font-semibold text-xl mb-1">
+             { t('Start  Onboarding')}
+            </h4>
+            <p className="text-sm text-gray-400">Carefully Provide your details </p>
+            </>
+
+            }
+            
            
           </div>
           <div className="w-full px-4 flex text-start flex-col justify-center items-center">
@@ -528,7 +672,12 @@ console.log(sendoptreponse)
       <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
     </svg>
     <div className="ms-3 text-sm font-medium">
-            {responseError.detail}
+           
+            {responseError=="Input should be 'individual', 'group' or 'sme'"
+?<>{responseError+". "} <Link to='/' className="underline ml-1">Select user type here </Link></>:responseError=="User already exists"?
+<>{responseError+". "} <button onClick={handleUserLogin} to='/' className="underline ml-1">login and continue </button></>:responseError
+}
+
     </div>
     <button type="button" onClick={()=>setRsponseError()} className="ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 "  data-dismiss-target="#alert-border-2" aria-label="Close">
       <span className="sr-only">Dismiss</span>
@@ -563,11 +712,16 @@ console.log(sendoptreponse)
     htmlFor="floating_filled"
     className="absolute text-sm text-slate-600 duration-300 transform scale-75 -translate-y-5 top-3 z-10 origin-[0] start-2.5 bg-white px-1 peer-focus:text-slate-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:-translate-y-5"
   >
-    Email
+              { t("Email")}
+
+    
   </label>
 
   {errors.email && <p className="text-red-500 text-xs mt-1">             <FontAwesomeIcon icon={faInfoCircle}    className="mr-1 opacity-80"  />
-  {errors.email}</p>}
+
+  {t(errors.email)}
+
+  </p>}
 
   
 
@@ -618,7 +772,8 @@ console.log(sendoptreponse)
           htmlFor="password"
           className="absolute text-sm text-slate-600 duration-300 transform scale-75 -translate-y-5 top-3 z-10 origin-[0] start-2.5 bg-white px-1 peer-focus:text-slate-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:-translate-y-5"
         >
-          Password
+          
+          { t("Password")}
         </label>
 
 {
@@ -633,7 +788,8 @@ console.log(sendoptreponse)
                 <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
 
               )}
-              Minimum of 8 characters
+              
+              { t("Minimum of 8 characters")}
             </li>
             <li >
               {passwordValidation.uppercase ? (
@@ -644,7 +800,8 @@ console.log(sendoptreponse)
                 <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
 
               )}
-              At least 1 uppercase letter
+              
+              { t("At least 1 uppercase letter")}
             </li>
             <li >
               {passwordValidation.lowercase ? (
@@ -662,7 +819,9 @@ console.log(sendoptreponse)
               ) : (
                 <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-red-500" />
               )}
-              At least 1 number
+             
+              { t(" At least 1 number")}
+
             </li>
           </ul>
         </div>
@@ -674,22 +833,26 @@ console.log(sendoptreponse)
         {errors.password && (
           <p className="text-red-500 text-xs mt-1">
             <FontAwesomeIcon icon={faInfoCircle} className="mr-1 opacity-80" />
-            {errors.password}
+            
+            {t(errors.password)}
           </p>
         )}
       </div>
     </div>
 
 
-
-        <Link
+{
+  userLogin?
+  <Link
                 type="button"
-                onClick={handleSubmit}
+                onClick={handleSubmit2}
 
                 className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  font-semibold text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all w-full"
               >
               {
-                isLoading || isSendingOTP?(<><div className="spinner mr-4"></div> Loading...</>)
+                isLoginLoading?(<><div className="spinner mr-4"></div>
+                  {t("Loading...")}
+                 </>)
                 :
                     
                 
@@ -697,14 +860,54 @@ console.log(sendoptreponse)
                 (<> 
                   <div className="wrapper mr-2"> <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
 </svg>
-</div> Done </> ):"create account"
+</div> {("Done")} </> ):t("sign in and continue")
                 
                           
               }
                 
              
               </Link>
+
+
+              :
+
+              <Link
+                type="button"
+                onClick={handleSubmit}
+
+                className="bg-gradient-to-r from-[#8600D9EB] to-[#470073EB] inline-flex items-center text-white rounded-lg text-sm px-5 py-3  font-semibold text-center mt-3 justify-center duration-500 ease-in-out hover:from-[#470073EB] hover:to-[#8600D9EB] transition-all w-full"
+              >
+              {
+                isLoading || isSendingOTP?(<><div className="spinner mr-4"></div>
+                  {t("Loading...")}
+                 </>)
+                :
+                    
+                
+                isdone?
+                (<> 
+                  <div className="wrapper mr-2"> <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+</svg>
+</div> {("Done")} </> ):t("create account")
+                
+                          
+              }
+                
+             
+              </Link>
+
+
+}
+
+       
             </div>
+
+            {
+              userLogin?
+              <p className="text-sm  text-start w-full my-3 ">No account?<span className="underline cursor-pointer " onClick={handleUserLogi2n}>Sign up to Onboard</span></p>
+
+              :""
+            }
 
           </div>
           

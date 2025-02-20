@@ -22,7 +22,18 @@ function VerifyPhone({setTab}) {
     const [optsent,setOtpsent]=useState(false)
     const [optsentsuccess,setOtpsentSuccess]=useState(false)
     const [optsentverified,setOtpVerified]=useState(false)
+    const [timer, setTimer] = useState(60); // 60 seconds
 
+
+    useEffect(() => {
+      let interval;
+      if (timer > 0) {
+        interval = setInterval(() => {
+          setTimer((prevTimer) => prevTimer - 1);
+        }, 1000);
+      }
+      return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [timer]);
 
     const [formData, setFormData] = useState({
       phone: "",
@@ -63,6 +74,8 @@ function VerifyPhone({setTab}) {
           console.log(response)
           setOtpsent(true)
           setOtpsentSuccess(true)
+          setTimer(60); // Reset the timer to 60 seconds
+
           
           }catch(error){
             
@@ -107,25 +120,30 @@ function VerifyPhone({setTab}) {
     };
   
   
-  
+
     const handleInputChange = (e) => {
       const { name, value } = e.target;
-      
+    
       if (name === "phone") {
         const formattedPhone = formatPhoneNumber(value);
         setFormData(prev => ({
           ...prev,
           [name]: formattedPhone
         }));
-  
+    
         setErrors(prev => ({
           ...prev,
           phone: validatePhone(value) ? "" : "Please enter a valid phone number"
         }));
+    
+        // Reset OTP sent status when the phone number changes
+        setOtpsent(false);
+        setOtpsentSuccess(false);
+        setOtpVerified(false);
+        setRsponseError(null); // Clear any previous errors
       }
-     
     };
-  
+
     const handleInputChange2 = (e) => {
       const { name, value } = e.target;
       
@@ -540,6 +558,22 @@ const countryOptions1 = [
      <span className="text-xs text-red-600">OTP must be 6 digits</span>
      :""
     }
+</div>
+
+<div className="w-full text-start mb-14 flex justify-center items-start flex-col">
+  {isSendOtpLoading ? (
+    <div className="dots mr-4 my-3"></div>
+  ) : (
+    <button
+      onClick={handleSendOtp}
+      disabled={timer > 0}
+      className={`text-sm cursor-pointer text-[#8600D9] underline ${
+        timer > 0 ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
+      {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
+    </button>
+  )}
 </div>
   </>
 

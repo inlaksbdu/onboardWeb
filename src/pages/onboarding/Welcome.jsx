@@ -7,29 +7,55 @@ import { useTranslation } from 'react-i18next';
 function Welcome() {
   const [selectedOption, setSelectedOption] = useState(null);
   const navigate = useNavigate();
+  const [currentLanguage, setCurrentLanguage] = useState("en"); // State to track the current language
+
   const { t, i18n } = useTranslation();
 
   // Detect browser language on component mount
   useEffect(() => {
-    const detectBrowserLanguage = () => {
-      const browserLang = navigator.language.split('-')[0]; // This gets 'en' from 'en-US'
+    const detectLanguage = () => {
+      // First check localStorage
+      const savedLanguage = localStorage.getItem('preferredLanguage');
       const supportedLanguages = ['en', 'fr', 'es'];
       
-      // Check if browser language is supported, otherwise default to 'en'
-      const defaultLang = supportedLanguages.includes(browserLang) ? browserLang : 'en';
-      
-      // Only change language if it's different from current
-      if (i18n.language !== defaultLang) {
-        i18n.changeLanguage(defaultLang);
+      if (savedLanguage && supportedLanguages.includes(savedLanguage)) {
+        console.log(savedLanguage)
+        return savedLanguage;
       }
+
+      // If no saved language, detect browser language
+      const browserLang = navigator.language.split('-')[0];
+      console.log(browserLang)
+      return supportedLanguages.includes(browserLang) ? browserLang : 'en';
     };
 
-    detectBrowserLanguage();
+ 
+
+    const defaultLang = detectLanguage();
+    if (i18n.language !== defaultLang) {
+      i18n.changeLanguage(defaultLang).then(() => {
+        setCurrentLanguage(defaultLang); // Update state after language change
+      });
+    } else {
+      setCurrentLanguage(defaultLang); // Set state if language is already correct
+    }
   }, [i18n]);
 
   const handleRadioChange = (index) => {
     setSelectedOption(index);
   };
+
+  useEffect(() => {
+    const handleLanguageChange = (lang) => {
+      setCurrentLanguage(lang);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const handleNextClick = () => {
     if (selectedOption !== null) {
@@ -93,6 +119,8 @@ function Welcome() {
 
   const handleLanguageChange = (selectedOption) => {
     i18n.changeLanguage(selectedOption.value);
+    localStorage.setItem('preferredLanguage', selectedOption.value);
+
   };
 
   const customStyles = {
@@ -133,11 +161,10 @@ function Welcome() {
     }),
   };
 
-  // Find the current language option for the select
+ 
   const getCurrentLanguageOption = () => {
-    return languageOptions.find(option => option.value === i18n.language) || languageOptions[0];
+    return languageOptions.find(option => option.value === currentLanguage) || languageOptions[0];
   };
-
   return (
     <div className="w-full h-full justify-center items-center overflow-y-scroll">
       <div className="w-full flex justify-center items-center py-10 max-sm:px-4 max-xs:px-3">

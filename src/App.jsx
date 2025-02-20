@@ -16,12 +16,7 @@ import { useEffect } from 'react';
 import LandingPage from './components/onboardingpages/LandingPage';
 
 function App() {
-  const { t, i18n } = useTranslation();
 
-  useEffect(()=>{
-    i18n.changeLanguage(navigator.language); // Change language to English by default
-  
-  },[])
 
   return (
     <>
