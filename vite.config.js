@@ -1,16 +1,11 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
 export default defineConfig({
     plugins: [react()],
     server: {
         port: 8025,  
         host: '0.0.0.0',  
-        port: 8025,        
         strictPort: true,  
 
-        allowedHosts: 
-            'onboarding.bdudcloud.com',
+        allowedHosts: ['onboarding.bdudcloud.com'],
       
         proxy: {
             '/api': {
