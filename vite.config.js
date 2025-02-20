@@ -4,9 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
     plugins: [react()],
     server: {
-        host: '0.0.0.0',  // Allow external access from Docker
         port: 8025,       // Ensure Vite listens on 8025
-        strictPort: true, // Prevent Vite from switching ports
         allowedHosts: [
             'https://onboarding.bdudcloud.com/',
             'https://onboarding-api.bdudcloud.com'
@@ -19,5 +17,8 @@ export default defineConfig({
                 rewrite: (path) => path.replace(/^\/api/, '')
             }
         }
+    },
+    build: {
+        outDir: 'dist',
     }
 });
