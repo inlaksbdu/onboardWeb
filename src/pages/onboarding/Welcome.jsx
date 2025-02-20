@@ -7,41 +7,35 @@ import { useTranslation } from 'react-i18next';
 function Welcome() {
   const [selectedOption, setSelectedOption] = useState(null);
   const navigate = useNavigate();
-  const [currentLanguage, setCurrentLanguage] = useState("en"); // State to track the current language
+  const [currentLanguage, setCurrentLanguage] = useState("en");
 
   const { t, i18n } = useTranslation();
 
   // Detect browser language on component mount
   useEffect(() => {
     const detectLanguage = () => {
-      // First check localStorage
       const savedLanguage = localStorage.getItem('preferredLanguage');
       const supportedLanguages = ['en', 'fr', 'es'];
       
       if (savedLanguage && supportedLanguages.includes(savedLanguage)) {
-        console.log(savedLanguage)
         return savedLanguage;
       }
 
-      // If no saved language, detect browser language
       const browserLang = navigator.language.split('-')[0];
-      console.log(browserLang)
       return supportedLanguages.includes(browserLang) ? browserLang : 'en';
     };
-
- 
 
     const defaultLang = detectLanguage();
     if (i18n.language !== defaultLang) {
       i18n.changeLanguage(defaultLang).then(() => {
-        setCurrentLanguage(defaultLang); // Update state after language change
+        setCurrentLanguage(defaultLang);
       });
     } else {
-      setCurrentLanguage(defaultLang); // Set state if language is already correct
+      setCurrentLanguage(defaultLang);
     }
   }, [i18n]);
 
-  const handleRadioChange = (index) => {
+  const handleCardClick = (index) => {
     setSelectedOption(index);
   };
 
@@ -120,7 +114,6 @@ function Welcome() {
   const handleLanguageChange = (selectedOption) => {
     i18n.changeLanguage(selectedOption.value);
     localStorage.setItem('preferredLanguage', selectedOption.value);
-
   };
 
   const customStyles = {
@@ -161,10 +154,10 @@ function Welcome() {
     }),
   };
 
- 
   const getCurrentLanguageOption = () => {
     return languageOptions.find(option => option.value === currentLanguage) || languageOptions[0];
   };
+
   return (
     <div className="w-full h-full justify-center items-center overflow-y-scroll">
       <div className="w-full flex justify-center items-center py-10 max-sm:px-4 max-xs:px-3">
@@ -172,13 +165,12 @@ function Welcome() {
           <div className="w-full flex justify-end px-4 mb-4">
             <div>
               <Select
-                    options={languageOptions}
+                options={languageOptions}
                 styles={customStyles}
                 onChange={handleLanguageChange}
                 value={getCurrentLanguageOption()}
                 isSearchable={false}
               />
-              
             </div>
           </div>
           <div className="w-full flex justify-center items-center flex-col mb-4">
@@ -199,27 +191,30 @@ function Welcome() {
             </p>
             <div className="w-full flex flex-col justify-center items-center mt-5">
               {["Individual", "Groups", "SME"].map((label, index) => (
-                <div
+                <button
                   key={index}
-                  className={`w-[90%] group transition-all duration-300 ease-in-out ${
+                  onClick={() => handleCardClick(index)}
+                  className={`w-[90%] group transition-all duration-300 ease-in-out cursor-pointer ${
                     selectedOption === index
                       ? "bg-text-gradient text-white border"
-                      : "bg-white border text-slate-600 border-[#8600D9EB]"
+                      : "bg-white border text-slate-600 border-[#8600D9EB] hover:bg-gray-50"
                   } rounded-lg p-2 flex text-start flex-row mb-8 items-center`}
                 >
                   <p className="font-semibold">{t(label)}</p>
                   <div className="flex w-full justify-end p-3 rounded-lg">
-                    <input
-                      type="radio"
-                      className="w-5 h-5 accent-[#8600D9EB]"
-                      name="description"
-                      id={`radio-${index}`}
-                      value={label.toLowerCase()}
-                      checked={selectedOption === index}
-                      onChange={() => handleRadioChange(index)}
-                    />
+                    <div
+                      className={`w-5 h-5 rounded-full border ${
+                        selectedOption === index 
+                        ? "bg-white border-white" 
+                        : "border-[#8600D9EB]"
+                      }`}
+                    >
+                      {selectedOption === index && (
+                        <div className="w-3 h-3 bg-[#8600D9EB] rounded-full m-auto mt-1"></div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </button>
               ))}
 
               <button
