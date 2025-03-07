@@ -201,11 +201,16 @@ function FaceRecognition({ setTab }) {
           detail:"Invalid file type. Please upload only image files."
         })
       } else if (error.status === 400) {
-        if (error.reasons){
-          setRsponseError({
-            detail: `Document verification failed. Please try again.${error.reason[0].description}`
-            
-          })
+        if (error.data.detail.reasons){
+          if (error.data.detail.reasons[0].decision==="reject"){
+       
+  setRsponseError({
+    detail: ` "We couldn't verify that your selfie is a live photo. Please take a new selfie in good lighting, facing the camera directly."`
+    
+  })
+          }
+        
+       
         }
         else{
         setRsponseError({

@@ -11,16 +11,19 @@ function Welcome() {
 
   const { t, i18n } = useTranslation();
 
-  // Detect browser language on component mount
+
+
   useEffect(() => {
     const detectLanguage = () => {
+      // First check localStorage
       const savedLanguage = localStorage.getItem('preferredLanguage');
-      const supportedLanguages = ['en', 'fr', 'es'];
+      const supportedLanguages = ["en", "fr", "es", "pt", "it", "de", "zh", "sw", "yo", "af", "ha", "ig", "ak"];
       
       if (savedLanguage && supportedLanguages.includes(savedLanguage)) {
         return savedLanguage;
       }
 
+      // If no saved language, detect browser language
       const browserLang = navigator.language.split('-')[0];
       return supportedLanguages.includes(browserLang) ? browserLang : 'en';
     };
@@ -28,16 +31,12 @@ function Welcome() {
     const defaultLang = detectLanguage();
     if (i18n.language !== defaultLang) {
       i18n.changeLanguage(defaultLang).then(() => {
-        setCurrentLanguage(defaultLang);
+        setCurrentLanguage(defaultLang); // Update state after language change
       });
     } else {
-      setCurrentLanguage(defaultLang);
+      setCurrentLanguage(defaultLang); // Set state if language is already correct
     }
   }, [i18n]);
-
-  const handleCardClick = (index) => {
-    setSelectedOption(index);
-  };
 
   useEffect(() => {
     const handleLanguageChange = (lang) => {
@@ -50,6 +49,15 @@ function Welcome() {
       i18n.off('languageChanged', handleLanguageChange);
     };
   }, [i18n]);
+
+
+ 
+
+  const handleCardClick = (index) => {
+    setSelectedOption(index);
+  };
+
+  
 
   const handleNextClick = () => {
     if (selectedOption !== null) {
@@ -66,50 +74,37 @@ function Welcome() {
     }
   }, []);
 
+ 
+
   const languageOptions = [
-    {
-      value: "en",
-      label: (
-        <div className="w-full justify-between items-center flex-row text-xs flex">
-          English
-          <img
-            src="https://flagcdn.com/w40/us.png"
-            alt="English"
-            style={{ width: 17, height: 17, marginLeft: 10 }}
-            className="rounded-full"
-          />
-        </div>
-      ),
-    },
-    {
-      value: "fr",
-      label: (
-        <div className="w-full justify-between items-center flex-row text-xs flex">
-          Français
-          <img
-            src="https://flagcdn.com/w40/fr.png"
-            alt="French"
-            className="rounded-full"
-            style={{ width: 17, height: 17, marginLeft: 10 }}
-          />
-        </div>
-      ),
-    },
-    {
-      value: "es",
-      label: (
-        <div className="w-full justify-between items-center flex-row text-xs flex">
-          Español
-          <img
-            src="https://flagcdn.com/w40/es.png"
-            alt="Spanish"
-            className="rounded-full"
-            style={{ width: 17, height: 17, marginLeft: 10 }}
-          />
-        </div>
-      ),
-    }
-  ];
+    { value: "en", label: "English", flag: "us" },
+    { value: "fr", label: "Français", flag: "fr" },
+    { value: "es", label: "Español", flag: "es" },
+    { value: "pt", label: "Português", flag: "pt" },
+    { value: "it", label: "Italiano", flag: "it" },
+    { value: "de", label: "Deutsch", flag: "de" },
+    { value: "zh", label: "中文", flag: "cn" },
+    { value: "sw", label: "Kiswahili", flag: "tz" },
+    { value: "yo", label: "Yorùbá", flag: "ng" },
+    { value: "af", label: "Afrikaans", flag: "za" },
+    { value: "ha", label: "Hausa", flag: "ne" },
+    { value: "ig", label: "Igbo", flag: "ng" },
+    { value: "ak", label: "Akan", flag: "gh" }
+  ].map(lang => ({
+    value: lang.value,
+    label: (
+      <div className="flex items-center justify-between text-xs">
+        {lang.label}
+        <img
+          src={`https://flagcdn.com/w40/${lang.flag}.png`}
+          alt={lang.label}
+          className="rounded-full ml-2"
+          style={{ width: 17, height: 17 }}
+        />
+      </div>
+    )
+  }));
+  
 
   const handleLanguageChange = (selectedOption) => {
     i18n.changeLanguage(selectedOption.value);
