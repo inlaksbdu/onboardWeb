@@ -45,10 +45,10 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
                 // Retry the original request
                 result = await baseQuery(args, api, extraOptions);
             } else {
-                api.dispatch(logOut());
+                console.log(refreshResult )
             }
-        } catch {
-            api.dispatch(logOut());
+        } catch (e){
+           console.log(e)
         }
     }
     return result;

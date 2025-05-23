@@ -205,12 +205,19 @@ function FaceRecognition({ setTab }) {
           if (error.data.detail.reasons[0].decision==="reject"){
        
   setRsponseError({
-    detail: ` "We couldn't verify that your selfie is a live photo. Please take a new selfie in good lighting, facing the camera directly."`
+    detail: ` We couldn't verify that your selfie is a live photo. Please take a new selfie in good lighting, facing the camera directly.`
     
   })
           }
         
        
+        }
+
+        else if (error.data.detail==="Document already uploaded"){
+          setRsponseError({
+            detail: "Document already uploaded,try again with a different document"
+            
+          })
         }
         else{
         setRsponseError({

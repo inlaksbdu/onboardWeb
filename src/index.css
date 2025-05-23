@@ -18,3 +18,22 @@ body {
 }
 
 
+
+
+@layer base {
+  /* Regular (400) */
+  @font-face {
+    font-family: "Aeonik TRIAL";
+    src: url("/fonts/AeonikTRIAL-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+  }
+  /* Bold (700) */
+  @font-face {
+    font-family: "Aeonik TRIAL";
+    src: url("/fonts/AeonikTRIAL-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-display: swap;
+  }
+  /* Add more weights/styles as needed */
+}

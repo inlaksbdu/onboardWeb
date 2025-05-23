@@ -30,6 +30,8 @@ export const OnboardingApiSlice = apiSlice.injectEndpoints({
                
             })
         }),
+
+        
         
     })
 });
@@ -37,5 +39,6 @@ export const OnboardingApiSlice = apiSlice.injectEndpoints({
 export const {
     useOCRMutation,
     useGetStageMutation,
-    useCorfirmCardDataMutation
+    useCorfirmCardDataMutation,
+   
 } = OnboardingApiSlice;

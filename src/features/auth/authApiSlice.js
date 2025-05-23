@@ -86,6 +86,62 @@ export const authApiSlice = apiSlice.injectEndpoints({
             })
         }),
 
+             createOrganization: builder.mutation({
+            query: (body) => ({
+                url: `/organizations/`,
+                method: 'POST',
+                body: body,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    credentials: 'include',
+                }
+              
+               
+            })
+        }),
+
+            getOrganizations: builder.mutation({
+            query: () => ({
+                url: `/organizations/`,
+                method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    credentials: 'include',
+                }
+                
+              
+               
+            })
+        }),
+
+
+              getOrganizationDetails: builder.mutation({
+            query: (id) => ({
+                url: `/organizations/${id}`,
+                method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    credentials: 'include',
+                }
+                
+              
+               
+            })
+        }),
+
+              whoAmI :builder.mutation({
+            query: ({body,id}) => ({
+                url: `/organizations/${id}`,
+                method: 'PUT',
+                body:body
+              
+               
+            })
+        }),
+
 
    
 
@@ -107,4 +163,8 @@ export const {
     useSendOTPSMSMutation,
     useVerifyPhoneMutation,
     useGetCardDataMutation,
+    useCreateOrganizationMutation,
+    useGetOrganizationsMutation,
+    useGetOrganizationDetailsMutation,
+    useWhoAmIMutation
 } = authApiSlice;

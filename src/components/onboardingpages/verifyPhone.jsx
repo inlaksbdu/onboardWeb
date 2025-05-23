@@ -179,6 +179,7 @@ function VerifyPhone({setTab}) {
   
      try{
   
+      console.log(formDataOtp)
       const response = await verifyOtp(formDataOtp).unwrap();
       console.log(response);
       setIsDone(true)
