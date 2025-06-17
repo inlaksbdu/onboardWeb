@@ -19,7 +19,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
     if (result?.error?.status === 401) {
-        const refreshToken =  localStorage.getItem("refresh") ;
+        const refreshToken = localStorage.getItem("refresh");
         if (!refreshToken) {
             api.dispatch(logOut());
             return result;
@@ -29,32 +29,28 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
             const refreshResult = await baseQuery({
                 url: '/auth/refresh/',
                 method: 'POST',
-                body: { refresh_token: refreshToken }
+                body: { refresh: refreshToken } // Changed from refresh_token to refresh
             }, api, extraOptions);
 
             if (refreshResult?.data?.access) {
-                // Store the new access token
-                const currentCredentials = getState().auth;
-
+                const currentCredentials = api.getState().auth; // Fixed getState usage
                 api.dispatch(
-                  setCredentials({
-                    ...currentCredentials,
-                    access: response.access,
-                  })
+                    setCredentials({
+                        ...currentCredentials,
+                        access: refreshResult.data.access, // Fixed variable name
+                    })
                 );
                 // Retry the original request
                 result = await baseQuery(args, api, extraOptions);
             } else {
-                console.log(refreshResult )
+                api.dispatch(logOut());
             }
-        } catch (e){
-           console.log(e)
+        } catch (e) {
+            api.dispatch(logOut());
         }
     }
     return result;
 };
-
-
 
 
 // SigninComponent.js modifications for handleSubmit2

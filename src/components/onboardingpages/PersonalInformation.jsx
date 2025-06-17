@@ -261,8 +261,13 @@ function PersonalInformation() {
       
 
 
+
+      {
+        /* openPinModal();*/
+      }
       setDone(true);
-      openPinModal();
+       navigate('/customer-dashboard');
+     
     } catch (error) {
       console.error("Confirmation failed:", error);
 
@@ -279,8 +284,9 @@ function PersonalInformation() {
         }
       };
 
-      // Log the error
-      try {
+
+      {
+        /* try {
         await axios.post('/api/account-creation-log', errorLogData);
       } catch (loggingError) {
         console.error("Failed to log error:", loggingError);
@@ -289,7 +295,11 @@ function PersonalInformation() {
       // Show error in UI (use API errorMsg if available)
       setSignupError(
         error.response?.data?.errorMsg || error.response?.data?.message || error.message || 'Signup failed'
-      );
+      );*/
+      }
+
+      // Log the error
+     
     }
   };
 

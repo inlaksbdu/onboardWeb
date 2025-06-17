@@ -27,7 +27,7 @@ const ReportTable = () => {
       }).unwrap();
       
       setTotalCustomers(response.total);
-      setCustomers(response.customers);
+      setCustomers(response.items);
       setTotalPages(Math.ceil(response.total / 10));
     } catch (e) {
       console.log(e);

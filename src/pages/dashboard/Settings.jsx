@@ -1,8 +1,17 @@
 import React from 'react'
 import profile from '../../assets/img/profile/profile.jpeg'
+import { logOut } from '../../features/auth/authSlice'
+import { useDispatch } from 'react-redux'
+import { use } from 'react'
 
 
 function Settings() {
+    const dispatch=useDispatch()
+
+    const handleLogout = () => {
+        dispatch(logOut())
+        navigate("/admin/login", { replace: true });
+    }
   return (
 
     <div className="w-full h-full pt-24  flex flex-col items-center    px-3 bg-[#FBFBFB]">
@@ -159,7 +168,7 @@ Allow admin to view and edit their personal details
     </div>
 
     
-    <div className="h-32 rounded-lg shadow-md shadow-gray-400  border w-full border-slate-200 p-3 flex flex-col justify-center ">
+    <div onClick={handleLogout} className="h-32  cursor-pointer rounded-lg shadow-md shadow-gray-400  border w-full border-slate-200 p-3 flex flex-col justify-center ">
     <div className='flex-row justify-between  items-center flex '>
     <div className='flex flex-row items-center '>
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M3.40395 3.4042H11.089C11.7934 3.4042 12.3698 2.82782 12.3698 2.12336C12.3698 1.4189 11.7934 0.842529 11.089 0.842529H3.40395C1.99504 0.842529 0.842285 1.99528 0.842285 3.4042V21.3359C0.842285 22.7448 1.99504 23.8975 3.40395 23.8975H11.089C11.7934 23.8975 12.3698 23.3212 12.3698 22.6167C12.3698 21.9122 11.7934 21.3359 11.089 21.3359H3.40395V3.4042Z" fill="#BBBBBB"/> <path d="M23.4491 11.9214L19.8755 8.34791C19.7864 8.2564 19.6721 8.19355 19.5471 8.1674C19.4221 8.14125 19.2921 8.153 19.1738 8.20115C19.0555 8.24929 18.9543 8.33163 18.8831 8.43764C18.8118 8.54364 18.7739 8.66849 18.774 8.7962V11.0889H9.80818C9.10372 11.0889 8.52734 11.6653 8.52734 12.3697C8.52734 13.0742 9.10372 13.6506 9.80818 13.6506H18.774V15.9433C18.774 16.5196 19.4657 16.8014 19.8627 16.3915L23.4362 12.818C23.6924 12.5747 23.6924 12.1648 23.4491 11.9214Z" fill="#BBBBBB"/> </svg>

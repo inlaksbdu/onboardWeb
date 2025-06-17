@@ -32,6 +32,13 @@ export const adminApiSlice = apiSlice.injectEndpoints({
                
             })
         }),
+             getDashboardData: builder.mutation({
+            query: () => ({
+                url: '/admin/dashboard',
+                method: 'GET',
+               
+            })
+        }),
     })
 });
 
@@ -39,4 +46,5 @@ export const {
     useGetCustomersMutation,
     useGetCutomerDetailMutation,
     useGetMetricsMutation,
+    useGetDashboardDataMutation
 } = adminApiSlice;

@@ -7,11 +7,13 @@ import { useGetCustomersMutation,useGetMetricsMutation} from '../../features/adm
 import { useEffect ,useState} from 'react';
 import Skeleton ,{ SkeletonTheme}from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
+import { useGetDashboardDataMutation } from '../../features/admin/adminSlice';
 function Dashboard() {
 
 
   const [getCustomers, { isLoading }] = useGetCustomersMutation();
   const [getMetrics, { isLoading:isLoadingMetrics }] = useGetMetricsMutation();
+  const [getDashboardData, { isLoading:isLoadingDashboardData }] = useGetDashboardDataMutation();
   const [metrics, setMetrics] = useState();
   const [onboardedCustomers, setOnboardedCustomers] = useState();
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +23,16 @@ function Dashboard() {
     account_type: ""
   });
 
+
+  const handleGetDashboardData = async () => {
+    
+    try {
+      const response = await getDashboardData().unwrap();
+      console.log(response);
+    } catch (e) {
+      console.log(e);
+    }
+  }
   const handleGetCustomer = async (page = 1, filters = {}) => {
     try {
       const response = await getCustomers({
@@ -50,6 +62,7 @@ function Dashboard() {
 
   useEffect(() => {
     handlegetMetrics();
+    handleGetDashboardData();
   }, []);
 
   useEffect(() => {
